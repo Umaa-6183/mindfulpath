@@ -1,0 +1,68 @@
+/* /frontend/src/pages/Form.css - Corrected for Design and Responsiveness */
+
+/* --- 1. Global Container Fix (Ensures responsiveness and centering) --- */
+.form-container {
+  display: flex; /* Enables centering */
+  align-items: center; /* Centers form vertically */
+  justify-content: center; /* Centers form horizontally */
+  min-height: 100vh; /* Ensures full screen height */
+  padding: 20px; /* Adds padding for smaller screens */
+  box-sizing: border-box; 
+  /* Soft White or Light Blue Background [cite: 252] */
+  background-color: #F0F8FF; /* Light Blue */ 
+  width: 100%; 
+}
+
+/* --- 2. Form Box Styling (White Form Area) --- */
+.form-box {
+  background: #FFFFFF; /* White for clarity/form area [cite: 241] */
+  padding: 30px;
+  border-radius: 12px; 
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%; 
+  max-width: 450px; /* Limits size on large screens */
+}
+
+/* --- 3. Input and Button Styling (Orange CTA) --- */
+.input-group {
+  margin-bottom: 15px;
+}
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #333;
+}
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+.checkbox-group input {
+  margin-right: 8px;
+}
+
+/* Orange Button [cite: 238] */
+.form-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #FFA500; /* Orange (Energy & Positivity) */
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.form-button:hover {
+  background-color: #FF8C00; /* Slightly darker orange on hover */
+}

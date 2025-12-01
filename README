@@ -1,0 +1,68 @@
+# 1. Setup & Install
+
+pip install -r requirements.txt
+python -m pytest --version
+
+# 2. Database Setup
+
+docker-compose up -d
+
+# Wait 10 seconds for DB to initialize
+
+# 3. Run API
+
+uvicorn main:app --reload
+
+# 4. Test Endpoints (Use curl or Postman)
+
+# Test Health Check
+
+curl http://localhost:8000/health
+
+# Test Registration (with consent)
+
+curl -X POST http://localhost:8000/api/v1/auth/register \
+ -H "Content-Type: application/json" \
+ -d '{
+"email": "user@example.com",
+"password": "SecurePass123!",
+"first_name": "John",
+"last_name": "Doe",
+"terms_accepted": true,
+"privacy_accepted": true,
+"consent_accepted": true,
+"country": "US"
+}'
+
+# Test Login
+
+curl -X POST http://localhost:8000/api/v1/auth/login \
+ -H "Content-Type: application/json" \
+ -d '{
+"email": "user@example.com",
+"password": "SecurePass123!"
+}'
+
+# Test Get Current User (replace TOKEN with actual token)
+
+curl -X GET http://localhost:8000/api/v1/auth/me \
+ -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Test Update Profile
+
+curl -X PUT http://localhost:8000/api/v1/auth/profile \
+ -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+ -H "Content-Type: application/json" \
+ -d '{
+"age": 28,
+"gender": "Male",
+"timezone": "UTC"
+}'
+
+# 5. Verify Database
+
+psql -U mindful_user -d mindfulpath_db -c "SELECT \* FROM users;"
+
+# 6. Cleanup
+
+docker-compose down
