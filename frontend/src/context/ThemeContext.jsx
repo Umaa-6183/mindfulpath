@@ -3,16 +3,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  // 1. Check LocalStorage or System Preference on load
+  // 1. Initialize state: Check LocalStorage first, otherwise default to Light Mode (false)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('mindfulTheme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return savedTheme === 'dark'; // Returns true if 'dark', false otherwise
   });
 
-  // 2. Update the HTML class when state changes
+  // 2. Update the HTML class & LocalStorage when state changes
   useEffect(() => {
     const root = window.document.documentElement;
     if (isDarkMode) {
@@ -25,7 +22,7 @@ export function ThemeProvider({ children }) {
   }, [isDarkMode]);
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    setIsDarkMode(prev => !prev);
   };
 
   return (
