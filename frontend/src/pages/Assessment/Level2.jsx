@@ -80,10 +80,8 @@ export default function Level2Assessment() {
 
       await api.post('/assessment/submit/2', { answers: formattedAnswers });
       
-      // --- THIS IS THE FIX ---
       alert('Level 2 submitted! View your updated report.');
       navigate('/report'); // Go to the Report page
-      // --- END OF FIX ---
 
     } catch (err) {
       console.error('Error submitting assessment:', err);
@@ -162,7 +160,14 @@ export default function Level2Assessment() {
               <span className="level-badge">Level 2</span>
             </div>
 
-            <h2 className="question-title">{question.question}</h2>
+            {/* --- FIX: Added Question Number Logic Here --- */}
+            <h2 className="question-title">
+              <span style={{ color: '#f97316', marginRight: '8px' }}>
+                {currentQuestion + 1}.
+              </span>
+              {question.question}
+            </h2>
+            {/* --------------------------------------------- */}
 
             {/* Error Message */}
             {error && <div className="error-message">{error}</div>}

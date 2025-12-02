@@ -10,8 +10,14 @@ docker-compose up -d
 # Wait 10 seconds for DB to initialize
 
 # 3. Run API
+ssh -i "mindful-key.pem" ubuntu@3.27.240.110
+cd ~/mindfulpath/backend
+source venv/bin/activate
 
-uvicorn main:app --reload
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+#frontend
+http://mindfulpath-app-v1-sundari.s3-website-ap-southeast-2.amazonaws.com
 
 # 4. Test Endpoints (Use curl or Postman)
 

@@ -20,7 +20,7 @@ export default function Level1Assessment() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [error, setError] = useState(''); // State for error messages
+  const [error, setError] = useState(''); 
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -29,6 +29,7 @@ export default function Level1Assessment() {
         setQuestions(response.data.questions);
       } catch (err) {
         console.error('Error fetching questions:', err);
+        // Fallback for testing if API fails (Optional)
         setError('Failed to load assessment. Please try again later.');
       } finally {
         setLoading(false);
@@ -43,7 +44,7 @@ export default function Level1Assessment() {
       ...prev,
       [questionIndex]: answerKey,
     }));
-    setError(''); // Clear error on new selection
+    setError(''); 
   };
   
   const handleNext = () => {
@@ -72,7 +73,6 @@ export default function Level1Assessment() {
     setError('');
     
     try {
-      // Format the answers for the backend API
       const formattedAnswers = {};
       Object.entries(answers).forEach(([index, answerKey]) => {
         formattedAnswers[index] = answerKey;
@@ -81,7 +81,7 @@ export default function Level1Assessment() {
       await api.post('/assessment/submit/1', { answers: formattedAnswers });
       
       alert('Assessment submitted successfully! View your report.');
-      navigate('/report'); // Go to the report page after
+      navigate('/report'); 
     } catch (err) {
       console.error('Error submitting assessment:', err);
       setError(err.response?.data?.detail || 'Failed to submit assessment');
@@ -161,7 +161,14 @@ export default function Level1Assessment() {
               <span className="level-badge">Level 1</span>
             </div>
 
-            <h2 className="question-title">{question?.question}</h2>
+            {/* --- FIX: Added Question Number Logic Here --- */}
+            <h2 className="question-title">
+              <span style={{ color: '#f97316', marginRight: '8px' }}>
+                {currentQuestion + 1}.
+              </span>
+              {question?.question}
+            </h2>
+            {/* --------------------------------------------- */}
 
             {/* Error Message */}
             {error && <div className="error-message">{error}</div>}

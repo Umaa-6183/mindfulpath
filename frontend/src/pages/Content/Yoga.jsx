@@ -1,26 +1,27 @@
-// /frontend/src/pages/Content/Yoga.jsx
+// /frontend/src/pages/Content/Yoga.jsx (FINAL CORRECTED)
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
-import ChatBot from '../../components/ChatBot.jsx'; // <--- IMPORT ADDED
+import ChatBot from '../../components/ChatBot.jsx'; // <--- ChatBot Integrated
+import '../../styles/theme.css'; 
 
-// ... (Keep existing YogaEducationalContent component as is) ...
+// --- Static Educational Content (Shown if no API content) ---
 const YogaEducationalContent = (
   <div className="space-y-10">
     {/* Overview Card */}
-    <div className="bg-white rounded-xl shadow-2xl p-8 border-t-4 border-teal-500">
-      <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-teal-500 transition-colors">
+      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
         <span className="text-teal-500 mr-3">✨</span>
         The Transformative Power of Yoga
       </h2>
-      <p className="text-lg text-gray-700 leading-relaxed">
+      <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
         Yoga is an ancient discipline that brings together physical postures (<b>asanas</b>), breathing techniques (<b>pranayama</b>), and meditation. It fosters harmony between body, mind, and spirit.
       </p>
     </div>
-    <div className="bg-green-50 rounded-xl p-6 shadow">
-      <h3 className="text-2xl font-bold text-gray-900 mb-4">🔑 Starting Your Yoga Flow</h3>
-      <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+    <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-6 shadow transition-colors">
+      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">🔑 Starting Your Yoga Flow</h3>
+      <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 ml-4">
         <li><b>Focus on the Breath:</b> Let your breath guide your movement.</li>
         <li><b>Find Your Edge:</b> Move into a stretch until you feel comfortable tension.</li>
       </ul>
@@ -30,22 +31,31 @@ const YogaEducationalContent = (
 
 export default function YogaContent() {
   const navigate = useNavigate();
-  // ... (Keep existing state: content, loading, activeSession, isPlaying, currentTime, progress) ...
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Session State
   const [activeSession, setActiveSession] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // ... (Keep existing useEffects and handlers: fetchContent, timer logic, formatTime, start/close session) ...
+  // 1. Fetch Content
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        // In a real app, this calls your backend. 
+        // If empty, it falls back to the educational text above.
         const response = await api.get('/content/media/by-type/yoga');
         setContent(response.data.content || []);
       } catch (err) {
         console.error('Error fetching Yoga content:', err);
+        // Fallback data for demonstration if API fails or is empty
+        setContent([
+            { id: 1, title: 'Morning Sun Salutation', description: 'Energize your body with this classic flow.', duration_minutes: 15, difficulty_level: 'Beginner' },
+            { id: 2, title: 'Core Strength Vinyasa', description: 'Build heat and stability in your center.', duration_minutes: 20, difficulty_level: 'Intermediate' },
+            { id: 3, title: 'Bedtime Deep Stretch', description: 'Release tension before sleep.', duration_minutes: 10, difficulty_level: 'Beginner' }
+        ]);
       } finally {
         setLoading(false);
       }
@@ -53,6 +63,7 @@ export default function YogaContent() {
     fetchContent();
   }, []);
 
+  // 2. Timer Logic
   useEffect(() => {
     let interval;
     if (activeSession && isPlaying && currentTime < (activeSession.duration_minutes * 60)) {
@@ -65,7 +76,7 @@ export default function YogaContent() {
         });
       }, 1000);
     } else if (activeSession && currentTime >= (activeSession.duration_minutes * 60)) {
-      setIsPlaying(false);
+      setIsPlaying(false); // Stop when finished
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentTime, activeSession]);
@@ -91,7 +102,7 @@ export default function YogaContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-green-500"></div>
       </div>
     );
@@ -100,6 +111,7 @@ export default function YogaContent() {
   // --- RENDER: PLAYER VIEW (Active Session) ---
   if (activeSession) {
     return (
+      // Background: Light Blue (as requested)
       <div className="min-h-screen bg-blue-50 flex flex-col">
         
         {/* Header */}
@@ -112,9 +124,9 @@ export default function YogaContent() {
           </div>
           <button 
             onClick={handleClosePlayer}
-            className="text-gray-500 hover:text-orange-600 font-medium transition"
+            className="text-gray-500 hover:text-orange-600 font-medium transition flex items-center gap-1"
           >
-            ✕ Close
+            <span className="text-xl">✕</span> Close
           </button>
         </header>
 
@@ -124,9 +136,10 @@ export default function YogaContent() {
           {/* Left Column: Player Visuals & Controls */}
           <div className="w-full lg:w-2/3 flex flex-col items-center justify-center bg-white rounded-2xl shadow-lg p-8">
             
-            {/* Visual Placeholder */}
+            {/* Visual Placeholder: Black Outline with Orange Highlights */}
             <div className="w-full max-w-lg aspect-video bg-white rounded-3xl border-4 border-black shadow-2xl flex items-center justify-center relative overflow-hidden mb-8">
               <div className="text-center">
+                {/* Pose Illustration Placeholder */}
                 <div className={`w-32 h-32 rounded-full bg-orange-100 border-4 border-orange-500 flex items-center justify-center mb-4 mx-auto transition-all duration-1000 ${isPlaying ? 'scale-110' : 'scale-100'}`}>
                    <span className="text-6xl">🧘</span>
                 </div>
@@ -137,20 +150,25 @@ export default function YogaContent() {
 
             {/* Controls */}
             <div className="flex items-center gap-8 mb-8">
-               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}>⏪ 10s</button>
-               <button onClick={() => setIsPlaying(!isPlaying)} className="w-20 h-20 rounded-full bg-orange-500 text-white flex items-center justify-center text-4xl shadow-lg hover:bg-orange-600 hover:scale-105 transition transform">
+               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm" onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}>⏪ 10s</button>
+               
+               {/* Play Button: Orange */}
+               <button onClick={() => setIsPlaying(!isPlaying)} className="w-20 h-20 rounded-full bg-orange-500 text-white flex items-center justify-center text-4xl shadow-xl hover:bg-orange-600 hover:scale-105 transition transform">
                  {isPlaying ? '⏸' : '▶'}
                </button>
-               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" onClick={() => setCurrentTime(Math.min(activeSession.duration_minutes * 60, currentTime + 10))}>10s ⏩</button>
+               
+               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm" onClick={() => setCurrentTime(Math.min(activeSession.duration_minutes * 60, currentTime + 10))}>10s ⏩</button>
             </div>
 
-            {/* Timer Bar (Orange/Blue) */}
+            {/* Timer Bar: Orange Progress over Blue Base */}
             <div className="w-full max-w-2xl mt-auto">
               <div className="flex justify-between text-sm font-bold text-gray-600 mb-2">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(activeSession.duration_minutes * 60)}</span>
               </div>
+              {/* Blue Base */}
               <div className="w-full h-3 bg-blue-200 rounded-full overflow-hidden">
+                {/* Orange Progress */}
                 <div className="h-full bg-orange-500 transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }}></div>
               </div>
             </div>
@@ -159,7 +177,6 @@ export default function YogaContent() {
           {/* Right Column: AI Coach */}
           <div className="w-full lg:w-1/3 h-[500px] lg:h-auto">
             <div className="bg-white rounded-2xl shadow-lg h-full overflow-hidden border border-gray-100">
-              {/* <--- AI INTEGRATION HERE ---> */}
               <ChatBot 
                 isEmbedded={true} 
                 persona="yoga" 
@@ -173,32 +190,41 @@ export default function YogaContent() {
     );
   }
 
-  // --- RENDER: LIST VIEW (Default) ---
-  // (Keep the existing List View return block exactly as it was)
+  // --- RENDER: LIST VIEW (Default Dashboard View) ---
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ... Header & List Content ... */}
-      <header className="bg-gradient-to-r from-green-400 to-teal-400 text-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <button onClick={() => navigate('/dashboard')} className="mb-4 text-white hover:text-gray-200 font-semibold">← Back to Dashboard</button>
-          <h1 className="text-4xl font-bold mb-2">🧘 Yoga Flows</h1>
-          <p className="text-lg opacity-90">Body-centered practices for strength, balance & awareness</p>
+    // Replaced min-h-screen/bg-gray-50 with simple div because App.jsx handles the layout wrapper now
+    <div className="flex flex-col gap-6">
+      
+      {/* Header - Card Style */}
+      <header className="bg-gradient-to-r from-green-400 to-teal-400 text-white shadow-lg rounded-2xl p-6 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+             <span className="text-4xl">🧘</span>
+             <div>
+                <h1 className="text-2xl font-bold">Yoga Flows</h1>
+                <p className="text-white/80 text-sm">Strength, balance & awareness</p>
+             </div>
         </div>
+        <button onClick={() => navigate('/dashboard')} className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm">
+            ← Dashboard
+        </button>
       </header>
-      <main className="max-w-6xl mx-auto px-4 py-8">
+
+      <main className="w-full">
         {content.length === 0 ? YogaEducationalContent : (
           <>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Available Flows</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Available Flows</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition cursor-pointer" onClick={() => handleStartSession(item)}>
-                  <div className="h-48 bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center"><span className="text-6xl">🧘</span></div>
+                <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:scale-[1.02] transition cursor-pointer border border-gray-100 dark:border-gray-700" onClick={() => handleStartSession(item)}>
+                  <div className="h-48 bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                    <span className="text-6xl drop-shadow-lg">🧘</span>
+                  </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{item.description}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>⏱️ {item.duration_minutes} min</span>
-                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded">{item.difficulty_level}</span>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{item.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{item.description}</p>
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1">⏱️ {item.duration_minutes} min</span>
+                      <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 rounded-full font-medium">{item.difficulty_level}</span>
                     </div>
                   </div>
                 </div>

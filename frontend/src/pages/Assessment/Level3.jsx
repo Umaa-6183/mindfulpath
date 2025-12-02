@@ -1,4 +1,4 @@
-// /frontend/src/pages/Assessment/Level3.jsx
+// /frontend/src/pages/Assessment/Level3.jsx (FINAL CORRECTED)
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import api from '../../config/api.js';
 import '../styles/Assessment.css'; // This path is correct
 
-// --- FIX: Added the hard-coded options ---
 // These are the 4 options from your "Scoring Scale.pdf"
 const ANSWER_OPTIONS = {
   "A": "Empowered / Integrated / Breakthrough",
@@ -14,7 +13,6 @@ const ANSWER_OPTIONS = {
   "C": "Struggling / Limited / Reactive",
   "D": "Beginning / Exploring / Needs Support"
 };
-// --- End of Fix ---
 
 export default function Level3Assessment() {
   const navigate = useNavigate();
@@ -34,7 +32,6 @@ export default function Level3Assessment() {
       } catch (err) {
         console.error('Error fetching questions:', err);
         setError('Failed to load assessment. You may not have access to this level.');
-        // Don't navigate away, just show an error
       } finally {
         setLoading(false);
       }
@@ -46,9 +43,9 @@ export default function Level3Assessment() {
   const handleAnswerChange = (questionIndex, answerKey) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionIndex]: answerKey, // Store the key (e.g., "A")
+      [questionIndex]: answerKey, 
     }));
-    setError(''); // Clear error on new answer
+    setError(''); 
   };
 
   const handleNext = () => {
@@ -77,13 +74,11 @@ export default function Level3Assessment() {
     setError('');
     
     try {
-      // Format answers for the backend
       const formattedAnswers = {};
       Object.entries(answers).forEach(([index, answerKey]) => {
         formattedAnswers[index] = answerKey;
       });
       
-      // The backend expects: {"answers": {"0": "A", "1": "C", ...}}
       await api.post('/assessment/submit/3', { answers: formattedAnswers });
       
       alert('Assessment Complete! Generating your report...');
@@ -165,14 +160,20 @@ export default function Level3Assessment() {
               <span className="level-badge level-3">Level 3 (Intensive)</span>
             </div>
 
-            <h2 className="question-title">{question.question}</h2>
+            {/* --- FIX: Added Question Number Logic Here --- */}
+            <h2 className="question-title">
+              <span style={{ color: '#f97316', marginRight: '8px' }}>
+                {currentQuestion + 1}.
+              </span>
+              {question.question}
+            </h2>
+            {/* --------------------------------------------- */}
 
             {/* Error Message */}
             {error && <div className="error-message">{error}</div>}
 
             {/* Options */}
             <div className="options-container">
-              {/* --- FIX: Loop over the hard-coded ANSWER_OPTIONS --- */}
               {Object.entries(ANSWER_OPTIONS).map(([key, value]) => (
                 <label key={key} className="option-label">
                   <input
