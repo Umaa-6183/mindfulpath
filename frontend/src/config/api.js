@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://3.27.240.110:8000/api/v1';
+// --- FORCE THE REAL IP ADDRESS ---
+const API_BASE_URL = "http://3.27.240.110:8000/api/v1"; 
 
 const api = axios.create({
   baseURL: API_BASE_URL,
