@@ -1,19 +1,19 @@
-// /frontend/src/App.jsx
+// /frontend/src/App.jsx (FULLY CORRECTED)
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import { useTheme } from './context/ThemeContext.jsx'; // <--- IMPORT HOOK
 import PaymentSuccess from './pages/Payment/PaymentSuccess.jsx';
-
-// --- Import ALL your pages ---
+// --- Import ALL your pages (using .jsx) ---
 import Index from './pages/Index.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Profile from './pages/Profile.jsx';
 import Report from './pages/Report.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 import ChatBot from './components/ChatBot.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx'; // <--- NEW LINE 1: Import the button
 
 // Assessment
 import Level1 from './pages/Assessment/Level1.jsx';
@@ -24,8 +24,7 @@ import Level3 from './pages/Assessment/Level3.jsx';
 import UpgradeLevel2 from './pages/Upgrade/Level2.jsx';
 import UpgradeLevel3 from './pages/Upgrade/Level3.jsx';
 import Recommendations from './pages/Recommendations.jsx';
-
-// Content
+// Content (for Users)
 import NlpContent from './pages/Content/NLP.jsx';
 import YogaContent from './pages/Content/Yoga.jsx';
 import MeditationContent from './pages/Content/Meditation.jsx';
@@ -42,14 +41,18 @@ import AdminUsers from './pages/Admin/Users.jsx';
 import AdminUserDetails from './pages/Admin/UserDetails.jsx';
 import AdminContent from './pages/Admin/Content.jsx';
 
-// Protected Route Component
+
+// This component protects your user routes
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="spinner-container">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+      </div>
       </div>
     );
   }
@@ -61,71 +64,58 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+
 function App() {
-  // 1. USE THE HOOK
-  const { isDarkMode, toggleTheme } = useTheme();
-
   return (
+    <ThemeProvider>
     <AuthProvider>
-      {/* 2. THEME TOGGLE BUTTON (Floating Top Right) */}
-      <button 
-        onClick={toggleTheme} 
-        className="fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 text-2xl hover:scale-110 border border-gray-200 dark:border-gray-700"
-        title="Toggle Light/Dark Mode"
-      >
-        {isDarkMode ? '🌞' : '🌙'}
-      </button>
+      <ThemeToggle /> {/* <--- NEW LINE 2: The Button goes here safely */}
+      <ChatBot isEmbedded={false} persona="general" />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      {/* 3. GLOBAL BACKGROUND WRAPPER (Controls page color) */}
-      <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        {/* Protected User Routes */}
+        <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } />
+        <Route path="/profile" element={ <ProtectedRoute> <Profile /> </ProtectedRoute> } />
+        <Route path="/report" element={ <ProtectedRoute> <Report /> </ProtectedRoute> } />
         
-        <ChatBot isEmbedded={false} persona="general" />
+        {/* Assessment Routes */}
+        {/* FIX: Redirect /assessment to the Level 1 Assessment component */}
+        <Route path="/assessment" element={<ProtectedRoute> <Navigate to="/assessment/level1" replace /> </ProtectedRoute>} />
         
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <Route path="/assessment/level1" element={ <ProtectedRoute> <Level1 /> </ProtectedRoute> } />
+        <Route path="/assessment/level2" element={ <ProtectedRoute> <Level2 /> </ProtectedRoute> } />
+        <Route path="/assessment/level3" element={ <ProtectedRoute> <Level3 /> </ProtectedRoute> } />
+        
+        <Route path="/payment/success" element={ <ProtectedRoute> <PaymentSuccess /> </ProtectedRoute> } />
+        {/* Upgrade Routes */}
+        <Route path="/upgrade/level2" element={ <ProtectedRoute> <UpgradeLevel2 /> </ProtectedRoute> } />
+        <Route path="/upgrade/level3" element={ <ProtectedRoute> <UpgradeLevel3 /> </ProtectedRoute> } />
+        <Route path="/recommendations" element={ <ProtectedRoute> <Recommendations /> </ProtectedRoute> } />
+        {/* Content Routes */}
+        <Route path="/content/nlp" element={ <ProtectedRoute> <NlpContent /> </ProtectedRoute> } />
+        <Route path="/content/yoga" element={ <ProtectedRoute> <YogaContent /> </ProtectedRoute> } />
+        <Route path="/content/meditation" element={ <ProtectedRoute> <MeditationContent /> </ProtectedRoute> } />
 
-          {/* Protected User Routes */}
-          <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } />
-          <Route path="/profile" element={ <ProtectedRoute> <Profile /> </ProtectedRoute> } />
-          <Route path="/report" element={ <ProtectedRoute> <Report /> </ProtectedRoute> } />
-          
-          {/* Assessment Routes */}
-          <Route path="/assessment" element={<ProtectedRoute> <Navigate to="/assessment/level1" replace /> </ProtectedRoute>} />
-          <Route path="/assessment/level1" element={ <ProtectedRoute> <Level1 /> </ProtectedRoute> } />
-          <Route path="/assessment/level2" element={ <ProtectedRoute> <Level2 /> </ProtectedRoute> } />
-          <Route path="/assessment/level3" element={ <ProtectedRoute> <Level3 /> </ProtectedRoute> } />
-          
-          <Route path="/payment/success" element={ <ProtectedRoute> <PaymentSuccess /> </ProtectedRoute> } />
-          
-          {/* Upgrade Routes */}
-          <Route path="/upgrade/level2" element={ <ProtectedRoute> <UpgradeLevel2 /> </ProtectedRoute> } />
-          <Route path="/upgrade/level3" element={ <ProtectedRoute> <UpgradeLevel3 /> </ProtectedRoute> } />
-          <Route path="/recommendations" element={ <ProtectedRoute> <Recommendations /> </ProtectedRoute> } />
-          
-          {/* Content Routes */}
-          <Route path="/content/nlp" element={ <ProtectedRoute> <NlpContent /> </ProtectedRoute> } />
-          <Route path="/content/yoga" element={ <ProtectedRoute> <YogaContent /> </ProtectedRoute> } />
-          <Route path="/content/meditation" element={ <ProtectedRoute> <MeditationContent /> </ProtectedRoute> } />
+        {/* Community Routes */}
+        <Route path="/community" element={ <ProtectedRoute> <CommunityIndex /> </ProtectedRoute> } />
+        <Route path="/community/category/:categoryId" element={ <ProtectedRoute> <CommunityCategory /> </ProtectedRoute> } />
+        <Route path="/community/threads/:threadId" element={ <ProtectedRoute> <CommunityThread /> </ProtectedRoute> } />
 
-          {/* Community Routes */}
-          <Route path="/community" element={ <ProtectedRoute> <CommunityIndex /> </ProtectedRoute> } />
-          <Route path="/community/category/:categoryId" element={ <ProtectedRoute> <CommunityCategory /> </ProtectedRoute> } />
-          <Route path="/community/threads/:threadId" element={ <ProtectedRoute> <CommunityThread /> </ProtectedRoute> } />
+        {/* Admin Routes (Uses a different protected route) */}
+        <Route path="/admin" element={ <AdminProtectedRoute> <AdminDashboard /> </AdminProtectedRoute> } />
+        <Route path="/admin/users" element={ <AdminProtectedRoute> <AdminUsers /> </AdminProtectedRoute> } />
+        <Route path="/admin/users/:id" element={ <AdminProtectedRoute> <AdminUserDetails /> </AdminProtectedRoute> } />
+        <Route path="/admin/content" element={ <AdminProtectedRoute> <AdminContent /> </AdminProtectedRoute> } />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={ <AdminProtectedRoute> <AdminDashboard /> </AdminProtectedRoute> } />
-          <Route path="/admin/users" element={ <AdminProtectedRoute> <AdminUsers /> </AdminProtectedRoute> } />
-          <Route path="/admin/users/:id" element={ <AdminProtectedRoute> <AdminUserDetails /> </AdminProtectedRoute> } />
-          <Route path="/admin/content" element={ <AdminProtectedRoute> <AdminContent /> </AdminProtectedRoute> } />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 
