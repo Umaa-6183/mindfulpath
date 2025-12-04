@@ -278,11 +278,11 @@ export default function Report() {
             </button>
 
             <button
-              onClick={() => navigate('/upgrade/level3')}
+              onClick={() => navigate('/upgrade/level2')}
               className="p-4 bg-orange-100 dark:bg-orange-800 rounded-lg shadow hover:shadow-lg transition text-center border-2 border-orange-500"
             >
               <div className="text-2xl mb-2 dark:text-white">🚀</div>
-              <p className="font-semibold text-orange-600 dark:text-white">Unlock Level 3</p>
+              <p className="font-semibold text-orange-600 dark:text-white">Unlock Level 2</p>
               <p className="text-xs text-orange-700 dark:text-orange-200 mt-2">
                 Intensive assessment + 30-day roadmap
               </p>
