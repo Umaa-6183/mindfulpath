@@ -1,4 +1,4 @@
-# assessment.py (FIXED)
+# assessment.py (FINAL FIXED VERSION)
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
@@ -118,12 +118,16 @@ async def get_assessment_questions(
     logger.info(
         f"Assessment questions requested: Level {level} by user {current_user.id}")
 
-    # Check access
-    if not check_level_access(db, current_user.id, level):
+    # --- FIX: ALLOW ADMIN ACCESS ---
+    is_admin = current_user.role == "admin" or current_user.role == "ADMIN"
+    has_access = check_level_access(db, current_user.id, level)
+
+    if not is_admin and not has_access:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail=f"Level {level} requires payment. Please complete payment first.",
         )
+    # -------------------------------
 
     if level not in ASSESSMENT_QUESTIONS:
         raise HTTPException(
@@ -163,12 +167,16 @@ async def submit_assessment_answers(
     logger.info(
         f"Assessment submission: Level {level} by user {current_user.id}")
 
-    # Check access
-    if not check_level_access(db, current_user.id, level):
+    # --- FIX: ALLOW ADMIN ACCESS ---
+    is_admin = current_user.role == "admin" or current_user.role == "ADMIN"
+    has_access = check_level_access(db, current_user.id, level)
+
+    if not is_admin and not has_access:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail=f"Level {level} requires payment.",
         )
+    # -------------------------------
 
     if level not in ASSESSMENT_QUESTIONS:
         raise HTTPException(
