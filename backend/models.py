@@ -1,7 +1,6 @@
 # /backend/models.py
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, date  # <--- FIX 1: Added 'date' import
 from enum import Enum
 
@@ -277,7 +276,7 @@ class DailyPracticeResponse(BaseModel):
     intensity: Optional[str]
 
     # --- FIX 2: Changed type from str to date to match Database ---
-    logged_date: date
+    logged_date: Union[date, str]
     # -------------------------------------------------------------
 
     created_at: datetime
