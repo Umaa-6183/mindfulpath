@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date  # <--- FIX 1: Added 'date' import
 from enum import Enum
 
 # ==================================
@@ -311,7 +311,11 @@ class DailyPracticeResponse(BaseModel):
     practice_type: str
     duration_minutes: Optional[int]
     intensity: Optional[str]
-    logged_date: str  # Dates are often returned as strings
+
+    # --- FIX 2: Changed from str to date ---
+    logged_date: date
+    # ---------------------------------------
+
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -343,8 +347,12 @@ class StreakResponse(BaseModel):
     current_streak: int
     longest_streak: int
     practice_type: str
-    last_practice_date: Optional[str]
-    streak_started_at: Optional[str]
+
+    # --- FIX 3: Changed from str to date ---
+    last_practice_date: Optional[date]
+    streak_started_at: Optional[date]
+    # ---------------------------------------
+
     model_config = ConfigDict(from_attributes=True)
 
 

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date  # <--- FIX 1: Added 'date' import
 from enum import Enum
 
 
@@ -275,7 +275,11 @@ class DailyPracticeResponse(BaseModel):
     practice_type: str
     duration_minutes: Optional[int]
     intensity: Optional[str]
-    logged_date: str  # Dates are often returned as strings
+
+    # --- FIX 2: Changed type from str to date to match Database ---
+    logged_date: date
+    # -------------------------------------------------------------
+
     created_at: datetime
 
     class Config:
@@ -307,8 +311,14 @@ class StreakResponse(BaseModel):
     current_streak: int
     longest_streak: int
     practice_type: str
-    last_practice_date: Optional[str]
-    streak_started_at: Optional[str]
+
+    # --- FIX 3: Changed types from Optional[str] to Optional[date] ---
+    last_practice_date: Optional[date]
+    streak_started_at: Optional[date]
+    # -----------------------------------------------------------------
+
+    class Config:
+        from_attributes = True
 
 
 class UserProgressResponse(BaseModel):
@@ -405,7 +415,6 @@ class ProgressShareResponse(BaseModel):
         from_attributes = True
 
 # --- NEW PAYPAL SCHEMAS ---
-# Added these two classes for the new PayPal flow
 
 
 class PaymentCreateBody(BaseModel):
