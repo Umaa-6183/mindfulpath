@@ -2,208 +2,249 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-// We no longer need the broken CSS imports because we're using Tailwind
+import api from '../config/api.js'; // Using direct API for clearer error handling
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [consentAccepted, setConsentAccepted] = useState(false);
+  // Form State
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    terms_accepted: false,
+    privacy_accepted: false,
+    consent_accepted: false
+  });
 
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  // UI State
+  const [showPassword, setShowPassword] = useState(false);
+  const [globalError, setGlobalError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const allConsentsGiven = termsAccepted && privacyAccepted && consentAccepted;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (!allConsentsGiven) {
-      setError('You must accept all terms and policies to register.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const result = await register({
-        email,
-        password,
-        first_name: firstName,
-        last_name: lastName,
-        terms_accepted: termsAccepted,
-        privacy_accepted: privacyAccepted,
-        consent_accepted: consentAccepted,
-      });
-      
-      if (result && !result.success) {
-        setError(result.error || 'Registration failed');
-      }
-      // The context handles navigation on success
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setLoading(false);
+  // Handle Input Change
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    
+    // Clear specific field error when user types
+    if (fieldErrors[name]) {
+        setFieldErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
-  // --- Re-styled with Tailwind CSS for clean, consistent layout ---
+  // Validation Logic
+  const validateForm = () => {
+    const errors = {};
+    const pwd = formData.password;
+
+    // Email
+    if (!formData.email) errors.email = "Email is required.";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = "Please enter a valid email address.";
+    
+    // Password Complexity
+    if (!pwd) {
+      errors.password = "Password is required.";
+    } else {
+      if (pwd.length < 8) errors.password = "Password must be at least 8 characters.";
+      else if (!/[A-Z]/.test(pwd)) errors.password = "Password must contain an Uppercase letter.";
+      else if (!/[0-9]/.test(pwd)) errors.password = "Password must contain a Number.";
+      else if (!/[!@#$%^&*]/.test(pwd)) errors.password = "Password must contain a Special Character (!@#$%^&*).";
+    }
+
+    // Checkboxes
+    if (!formData.terms_accepted) errors.terms = "Required";
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setGlobalError('');
+    
+    if (!validateForm()) return; // Stop if validation fails
+
+    setIsSubmitting(true);
+
+    try {
+      await api.post('/auth/register', formData);
+      alert('Registration successful! Please log in.');
+      navigate('/login');
+    } catch (err) {
+      console.error('Registration Error:', err);
+      // Display backend error message nicely
+      const msg = err.response?.data?.detail || "Registration failed. Please try again.";
+      setGlobalError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helper to get input border classes based on error state
+  const getInputClass = (fieldName) => {
+    return `w-full px-4 py-2 border rounded-lg outline-none transition-colors ${
+      fieldErrors[fieldName] 
+        ? 'border-red-500 bg-red-50 focus:border-red-500' 
+        : 'border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200'
+    }`;
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
         
-        <h2 className="text-center text-3xl font-bold text-gray-900">
-          Create Your Account
-        </h2>
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
+          <p className="text-gray-500 mt-2 text-sm">Join MindfulPath today</p>
+        </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
-            <span className="block sm:inline">{error}</span>
+        {/* Global Error Message */}
+        {globalError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert">
+            {globalError}
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           
-          {/* First and Last Name Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                First Name
-              </label>
+          {/* Name Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
               <input
-                id="firstName"
+                name="first_name"
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                value={formData.first_name}
+                onChange={handleChange}
               />
             </div>
-            <div className="space-y-1">
-              <label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-                Last Name
-              </label>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
               <input
-                id="lastName"
+                name="last_name"
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                value={formData.last_name}
+                onChange={handleChange}
               />
             </div>
           </div>
         
-          <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Email <span className="text-red-500">*</span>
             </label>
             <input
-              id="email"
+              name="email"
               type="email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              className={getInputClass('email')}
+              value={formData.email}
+              onChange={handleChange}
               required
             />
+            {fieldErrors.email && <p className="text-xs text-red-500 mt-1 font-medium">{fieldErrors.email}</p>}
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
+          {/* Password with Toggle */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Password <span className="text-red-500">*</span>
             </label>
-            <input
-              id="password"
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Min. 8 chars, 1 upper, 1..."
-            />
-            <p className="text-xs text-gray-500">
-              Min. 8 chars, 1 uppercase, 1 number, 1 special character.
-            </p>
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                className={getInputClass('password')}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Min. 8 chars, 1 upper, 1 special..."
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm font-medium"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {fieldErrors.password ? (
+                <p className="text-xs text-red-500 mt-1 font-medium">{fieldErrors.password}</p>
+            ) : (
+                <p className="text-xs text-gray-500 mt-1">
+                  8+ chars, 1 Uppercase, 1 Number, 1 Special Char.
+                </p>
+            )}
           </div>
           
           {/* Consent Checkboxes */}
-          <div className="space-y-3">
-            <label className="flex items-start text-sm text-gray-600">
+          <div className="space-y-3 pt-2">
+            <label className="flex items-start gap-3 cursor-pointer group">
               <input
+                name="terms_accepted"
                 type="checkbox"
-                className="h-4 w-4 text-orange-600 border-gray-300 rounded mt-0.5 mr-3 shrink-0 focus:ring-orange-500"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-1 h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
+                checked={formData.terms_accepted}
+                onChange={handleChange}
               />
-              <span>
-                I have read and agree to the{' '}
-                <a 
-                  href="/terms_and_conditions.pdf" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Terms & Conditions
-                </a>.
+              <span className="text-sm text-gray-600 group-hover:text-gray-800">
+                I agree to the <span className="text-blue-600 hover:underline">Terms & Conditions</span>. <span className="text-red-500">*</span>
+              </span>
+            </label>
+            {fieldErrors.terms && <p className="text-xs text-red-500 ml-7 font-medium">{fieldErrors.terms}</p>}
+            
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                name="privacy_accepted"
+                type="checkbox"
+                className="mt-1 h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
+                checked={formData.privacy_accepted}
+                onChange={handleChange}
+              />
+              <span className="text-sm text-gray-600 group-hover:text-gray-800">
+                I agree to the <span className="text-blue-600 hover:underline">Privacy Policy</span>. <span className="text-red-500">*</span>
               </span>
             </label>
             
-            <label className="flex items-start text-sm text-gray-600">
+            <label className="flex items-start gap-3 cursor-pointer group">
               <input
+                name="consent_accepted"
                 type="checkbox"
-                className="h-4 w-4 text-orange-600 border-gray-300 rounded mt-0.5 mr-3 shrink-0 focus:ring-orange-500"
-                checked={privacyAccepted}
-                onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                className="mt-1 h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
+                checked={formData.consent_accepted}
+                onChange={handleChange}
               />
-              <span>
-                I have read and agree to the{' '}
-                <a 
-                  href="/privacy_policy.pdf" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Privacy Policy
-                </a>.
-              </span>
-            </label>
-            
-            <label className="flex items-start text-sm text-gray-600">
-              <input
-                type="checkbox"
-                className="h-4 w-4 text-orange-600 border-gray-300 rounded mt-0.5 mr-3 shrink-0 focus:ring-orange-500"
-                checked={consentAccepted}
-                onChange={(e) => setConsentAccepted(e.target.checked)}
-              />
-              <span>
-                I consent to the processing of my data as described.
+              <span className="text-sm text-gray-600 group-hover:text-gray-800">
+                I consent to data processing. <span className="text-red-500">*</span>
               </span>
             </label>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading || !allConsentsGiven}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+            className={`w-full py-3 rounded-lg text-white font-bold text-lg shadow-md transition-all transform active:scale-95 ${
+              isSubmitting 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-orange-500 hover:bg-orange-600 hover:shadow-lg'
+            }`}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-600">
+        <p className="text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-orange-600 hover:text-orange-500">
+          <Link to="/login" className="font-semibold text-orange-600 hover:text-orange-500 hover:underline">
             Sign In
           </Link>
         </p>

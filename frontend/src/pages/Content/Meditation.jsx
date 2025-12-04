@@ -1,9 +1,9 @@
-// /frontend/src/pages/Content/Meditation.jsx (FINAL CORRECTED)
+// /frontend/src/pages/Content/Meditation.jsx (FINAL VISUAL POLISH)
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
-import ChatBot from '../../components/ChatBot.jsx'; // <--- ChatBot Integrated
+import ChatBot from '../../components/ChatBot.jsx'; 
 import '../../styles/theme.css'; 
 
 // --- Static Educational Content (Fallback) ---
@@ -99,8 +99,8 @@ export default function MeditationContent() {
   const circumference = 2 * Math.PI * radius;
   const totalSeconds = activeSession ? activeSession.duration_minutes * 60 : 1;
   const progress = activeSession ? ((totalSeconds - timeLeft) / totalSeconds) : 0;
-  // Stroke offset logic: Start full, decrease as time passes (or vice versa depending on preference)
-  // Here we make the orange ring grow or shrink. Let's make it shrink (countdown style).
+  
+  // Make the ring shrink as time counts down
   const strokeDashoffset = -1 * progress * circumference; 
 
   if (loading) {
@@ -114,9 +114,11 @@ export default function MeditationContent() {
   // --- RENDER: PLAYER VIEW (Active Session) ---
   if (activeSession) {
     // Dynamic Classes based on Night Mode
-    const bgClass = isNightMode ? 'bg-gray-950' : 'bg-blue-50';
-    const textClass = isNightMode ? 'text-blue-100 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'text-gray-900';
-    const subTextClass = isNightMode ? 'text-blue-300' : 'text-gray-500';
+    // FIX: Changed bg-gray-950 to bg-black for Night Mode
+    const bgClass = isNightMode ? 'bg-black' : 'bg-blue-50';
+    // FIX: Added glowing text effect for Night Mode
+    const textClass = isNightMode ? 'text-blue-100 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]' : 'text-gray-900';
+    const subTextClass = isNightMode ? 'text-blue-400' : 'text-gray-500';
     const containerClass = isNightMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-white shadow-xl';
 
     return (
@@ -126,14 +128,13 @@ export default function MeditationContent() {
         <header className="px-6 py-6 flex justify-between items-center relative z-10 shrink-0">
           <button 
             onClick={() => setIsNightMode(!isNightMode)} 
-            className={`text-sm font-semibold px-4 py-2 rounded-full transition-all border ${isNightMode ? 'bg-gray-800 text-blue-200 border-blue-900 hover:bg-gray-700' : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50 shadow-sm'}`}
+            className={`text-sm font-semibold px-4 py-2 rounded-full transition-all border ${isNightMode ? 'bg-gray-800 text-yellow-300 border-gray-700 hover:bg-gray-700' : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50 shadow-sm'}`}
           >
-            {isNightMode ? '☀️ Day Mode' : '🌙 Night Mode'}
+            {isNightMode ? '🌙 Night Mode' : '☀️ Day Mode'}
           </button>
           
           <div className="flex flex-col items-center">
-             {/* Small Title in Header */}
-             <span className={`font-bold ${textClass}`}>{activeSession.title}</span>
+             <span className={`font-bold text-lg ${textClass}`}>{activeSession.title}</span>
           </div>
 
           <button 
@@ -162,12 +163,12 @@ export default function MeditationContent() {
                   {/* Orange Gradient Definition */}
                   <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#f97316" /> {/* Orange-500 */}
-                    <stop offset="100%" stopColor="#fb923c" /> {/* Orange-400 */}
+                    <stop offset="100%" stopColor="#fbbf24" /> {/* Amber-400 */}
                   </linearGradient>
                 </defs>
                 
                 {/* Track Circle (Background) */}
-                <circle cx="50%" cy="50%" r={radius} fill="transparent" stroke={isNightMode ? "#1e293b" : "#e2e8f0"} strokeWidth="8" />
+                <circle cx="50%" cy="50%" r={radius} fill="transparent" stroke={isNightMode ? "#334155" : "#e2e8f0"} strokeWidth="8" />
                 
                 {/* Progress Circle (Orange Gradient) */}
                 <circle 
@@ -184,7 +185,7 @@ export default function MeditationContent() {
               
               {/* Center Countdown Numbers */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-6xl font-mono font-light tracking-tighter ${isNightMode ? 'text-white drop-shadow-lg' : 'text-gray-800'}`}>
+                <span className={`text-6xl font-mono font-light tracking-tighter ${isNightMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'text-gray-800'}`}>
                     {formatTime(timeLeft)}
                 </span>
                 <span className={`text-sm mt-2 uppercase tracking-widest ${subTextClass}`}>Remaining</span>
@@ -194,7 +195,7 @@ export default function MeditationContent() {
             {/* Controls (Orange) */}
             <div className="flex items-center gap-8">
               <button 
-                className={`p-4 rounded-full border-2 transition ${isNightMode ? 'border-gray-800 text-gray-500 hover:bg-gray-800 hover:text-white' : 'border-gray-200 text-gray-400 hover:bg-white hover:text-indigo-600'}`} 
+                className={`p-4 rounded-full border-2 transition ${isNightMode ? 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white' : 'border-gray-200 text-gray-400 hover:bg-white hover:text-indigo-600'}`} 
                 onClick={() => setTimeLeft(Math.min(activeSession.duration_minutes * 60, timeLeft + 15))}
               >
                 ⏪ 15s
@@ -202,13 +203,14 @@ export default function MeditationContent() {
               
               <button 
                 onClick={() => setIsPlaying(!isPlaying)} 
-                className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center text-5xl shadow-xl hover:scale-105 hover:shadow-orange-500/50 transition transform"
+                // FIX: Play Button is always Orange Gradient
+                className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center text-5xl shadow-xl hover:scale-105 hover:shadow-orange-500/50 transition transform"
               >
                 {isPlaying ? '⏸' : '▶'}
               </button>
               
               <button 
-                className={`p-4 rounded-full border-2 transition ${isNightMode ? 'border-gray-800 text-gray-500 hover:bg-gray-800 hover:text-white' : 'border-gray-200 text-gray-400 hover:bg-white hover:text-indigo-600'}`} 
+                className={`p-4 rounded-full border-2 transition ${isNightMode ? 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white' : 'border-gray-200 text-gray-400 hover:bg-white hover:text-indigo-600'}`} 
                 onClick={() => setTimeLeft(Math.max(0, timeLeft - 15))}
               >
                 15s ⏩
@@ -231,7 +233,7 @@ export default function MeditationContent() {
         
         {/* Night Mode Ambient Glow Effect */}
         {isNightMode && (
-             <div className="absolute inset-0 bg-indigo-900 opacity-10 pointer-events-none mix-blend-screen blur-3xl"></div>
+             <div className="absolute inset-0 bg-blue-900 opacity-20 pointer-events-none mix-blend-screen blur-3xl"></div>
         )}
       </div>
     );
@@ -239,7 +241,6 @@ export default function MeditationContent() {
 
   // --- RENDER: LIST VIEW (Default Dashboard) ---
   return (
-    // Replaced min-h-screen/bg-gray-50 with simple div because App.jsx handles layout
     <div className="flex flex-col gap-6">
       
       {/* Header - Card Style */}

@@ -14,7 +14,7 @@ import {
   Legend,
 } from 'chart.js';
 import api from '../config/api.js';
-import { useTheme } from '../context/ThemeContext.jsx'; // <--- FIX 1: ADDED IMPORT
+import { useTheme } from '../context/ThemeContext.jsx'; 
 
 ChartJS.register(
   RadarController,
@@ -31,7 +31,6 @@ export default function Report() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // FIX 2: DECLARE useTheme() hook
   const { isDarkMode } = useTheme(); 
 
   useEffect(() => {
@@ -41,8 +40,8 @@ export default function Report() {
         setReport(response.data);
       } catch (err) {
         console.error('Error fetching report:', err);
-        alert('Failed to load report');
-        navigate('/dashboard');
+        // If error, stop loading but let UI handle the empty state or alert
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -51,7 +50,6 @@ export default function Report() {
     fetchReport();
   }, [navigate]);
 
-  // Final Chart Options (Apply dark theme to grid lines and text)
   const chartOptions = {
     scales: {
       r: {
@@ -59,17 +57,17 @@ export default function Report() {
         max: 12,
         ticks: {
           stepSize: 3,
-          color: isDarkMode ? '#e5e7eb' : '#6b7280', // Darker ticks for contrast
+          color: isDarkMode ? '#e5e7eb' : '#6b7280', 
           backdropColor: 'transparent',
         },
         grid: {
-          color: isDarkMode ? '#4b5563' : '#e5e7eb', // Dark grid lines for contrast
+          color: isDarkMode ? '#4b5563' : '#e5e7eb', 
         },
         angleLines: {
           color: isDarkMode ? '#4b5563' : '#e5e7eb',
         },
         pointLabels: {
-          color: isDarkMode ? '#d1d5db' : '#374151', // Light gray domain labels
+          color: isDarkMode ? '#d1d5db' : '#374151', 
         }
       },
     },
@@ -77,7 +75,7 @@ export default function Report() {
       legend: {
         position: 'top',
         labels: {
-            color: isDarkMode ? '#ffffff' : '#111827' // White legend text
+            color: isDarkMode ? '#ffffff' : '#111827' 
         }
       },
     },
@@ -124,26 +122,62 @@ export default function Report() {
     );
   }
 
+  // --- LOGIC FOR NEXT LEVEL UNLOCK ---
+  const completedLevels = report.completed_levels || [];
+  
+  // Default: Next step is Level 2
+  let nextStep = {
+    path: '/upgrade/level2',
+    label: 'Unlock Level 2',
+    desc: 'Intensive assessment + 30-day roadmap'
+  };
+
+  // If Level 2 is done, Next step is Level 3
+  if (completedLevels.includes(2)) {
+    nextStep = {
+      path: '/upgrade/level3',
+      label: 'Unlock Level 3',
+      desc: 'Expert coaching + Advanced Metrics'
+    };
+  }
+
+  // If Level 3 is done, Next step is Level 4
+  if (completedLevels.includes(3)) {
+    nextStep = {
+      path: '/upgrade/level4', // Assuming this route exists/will exist
+      label: 'Unlock Level 4',
+      desc: 'Mastery Level & Lifetime Access'
+    };
+  }
+
   return (
-    // Main Container (Body) bg-gray-50 -> dark:bg-gray-900
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-white">
-      {/* Header (Gradient is fine, but text must be correct) */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+      
+      {/* Header with Dashboard Redirect */}
       <header className="bg-gradient-to-r from-orange-400 to-blue-400 text-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Your Wellness Report</h1>
-          <p className="text-sm mt-2 opacity-90">
-            Generated on {new Date(report.report_generated_at).toLocaleDateString()}
-          </p>
+        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Your Wellness Report</h1>
+            <p className="text-sm mt-2 opacity-90">
+              Generated on {new Date(report.report_generated_at).toLocaleDateString()}
+            </p>
+          </div>
+          {/* Dashboard Button */}
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm"
+          >
+            ← Dashboard
+          </button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         
-        {/* Overall Score Section (bg-white -> dark:bg-gray-800) */}
+        {/* Overall Score Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* Overall Score */}
             <div className="text-center">
               <div className="text-6xl font-bold text-orange-500 mb-2">
                 {report.overall_score}
@@ -152,7 +186,6 @@ export default function Report() {
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Overall Life Balance Score</p>
             </div>
 
-            {/* Stage */}
             <div className="text-center">
               <div className="text-4xl mb-4">🎯</div>
               <h3 className="text-2xl font-bold text-blue-400 dark:text-blue-300 mb-2">
@@ -161,14 +194,13 @@ export default function Report() {
               <p className="text-sm text-gray-600 dark:text-gray-300">{report.overall_stage.description}</p>
             </div>
 
-            {/* Recommendation (bg-orange-50 -> dark:bg-orange-950) */}
             <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-4">
               <h4 className="font-bold text-gray-800 dark:text-white mb-2">Recommended Focus</h4>
               <p className="text-sm text-gray-700 dark:text-gray-200">{report.overall_stage.recommendation}</p>
             </div>
           </div>
 
-          {/* Radar Chart Container (bg-gray-50 -> dark:bg-gray-700) */}
+          {/* Radar Chart */}
           <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 text-center">
               Your Domain Scores
@@ -186,7 +218,6 @@ export default function Report() {
             {Object.entries(report.domain_feedback).map(([domain, feedback]) => (
               <div
                 key={domain}
-                // Main Cards (Overall Score, Domains) bg-white -> dark:bg-gray-800
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 border-orange-500"
               >
                 <div className="flex justify-between items-start mb-3">
@@ -200,11 +231,9 @@ export default function Report() {
                 </p>
                 <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">{feedback.feedback}</p>
                 
-                {/* Blue Block (Domain Practices) bg-blue-50 -> dark:bg-blue-900 */}
                 <div className="bg-blue-50 dark:bg-blue-900 rounded p-3">
                   <p className="text-xs text-gray-600 dark:text-blue-300 font-semibold mb-2">Recommended Practices:</p>
                   
-                  {/* Handle recommendations as a string or array */}
                   {Array.isArray(feedback.recommendations) ? (
                     <ul className="list-disc list-inside text-xs text-gray-700 dark:text-gray-200">
                       {feedback.recommendations.map((rec, index) => (
@@ -223,7 +252,7 @@ export default function Report() {
           </div>
         </div>
 
-        {/* --- NEW: Achievement Badges Section --- */}
+        {/* Badges Section */}
         {report.badges && report.badges.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Your Achievements</h2>
@@ -233,7 +262,6 @@ export default function Report() {
                 {report.badges.map((badge) => (
                   <div key={badge.id || badge.name} className="text-center w-28 flex flex-col items-center">
                     <div 
-                      // Achievement badges: Circular with Orange glow + Black outline.
                       className="w-20 h-20 p-2 rounded-full border-2 border-black dark:border-white bg-gray-50 dark:bg-gray-700 flex items-center justify-center shadow-lg shadow-orange-500/60"
                       title={badge.name} 
                     >
@@ -249,10 +277,9 @@ export default function Report() {
             </div>
           </div>
         )}
-        {/* --- END: Achievement Badges Section --- */}
 
         {/* Next Steps */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg shadow-lg p-8 mb-8">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg shadow-lg p-8 mb-8 transition-colors">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Next Steps</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button
@@ -277,14 +304,15 @@ export default function Report() {
               </p>
             </button>
 
+            {/* DYNAMIC UPGRADE BUTTON */}
             <button
-              onClick={() => navigate('/upgrade/level2')}
+              onClick={() => navigate(nextStep.path)}
               className="p-4 bg-orange-100 dark:bg-orange-800 rounded-lg shadow hover:shadow-lg transition text-center border-2 border-orange-500"
             >
               <div className="text-2xl mb-2 dark:text-white">🚀</div>
-              <p className="font-semibold text-orange-600 dark:text-white">Unlock Level 2</p>
+              <p className="font-semibold text-orange-600 dark:text-white">{nextStep.label}</p>
               <p className="text-xs text-orange-700 dark:text-orange-200 mt-2">
-                Intensive assessment + 30-day roadmap
+                {nextStep.desc}
               </p>
             </button>
           </div>

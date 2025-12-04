@@ -1,15 +1,14 @@
-// /frontend/src/pages/Content/Yoga.jsx (FINAL CORRECTED)
+// /frontend/src/pages/Content/Yoga.jsx (INTERACTIVE PLAYER UPDATE)
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
-import ChatBot from '../../components/ChatBot.jsx'; // <--- ChatBot Integrated
+import ChatBot from '../../components/ChatBot.jsx'; 
 import '../../styles/theme.css'; 
 
-// --- Static Educational Content (Shown if no API content) ---
+// --- Static Educational Content (Fallback) ---
 const YogaEducationalContent = (
   <div className="space-y-10">
-    {/* Overview Card */}
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-teal-500 transition-colors">
       <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
         <span className="text-teal-500 mr-3">✨</span>
@@ -44,13 +43,11 @@ export default function YogaContent() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        // In a real app, this calls your backend. 
-        // If empty, it falls back to the educational text above.
         const response = await api.get('/content/media/by-type/yoga');
         setContent(response.data.content || []);
       } catch (err) {
         console.error('Error fetching Yoga content:', err);
-        // Fallback data for demonstration if API fails or is empty
+        // Fallback data
         setContent([
             { id: 1, title: 'Morning Sun Salutation', description: 'Energize your body with this classic flow.', duration_minutes: 15, difficulty_level: 'Beginner' },
             { id: 2, title: 'Core Strength Vinyasa', description: 'Build heat and stability in your center.', duration_minutes: 20, difficulty_level: 'Intermediate' },
@@ -76,7 +73,8 @@ export default function YogaContent() {
         });
       }, 1000);
     } else if (activeSession && currentTime >= (activeSession.duration_minutes * 60)) {
-      setIsPlaying(false); // Stop when finished
+      setIsPlaying(false);
+      alert("Session Complete!");
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentTime, activeSession]);
@@ -111,7 +109,7 @@ export default function YogaContent() {
   // --- RENDER: PLAYER VIEW (Active Session) ---
   if (activeSession) {
     return (
-      // Background: Light Blue (as requested)
+      // Background: Light Blue (Investor Requirement)
       <div className="min-h-screen bg-blue-50 flex flex-col">
         
         {/* Header */}
@@ -134,43 +132,45 @@ export default function YogaContent() {
         <main className="flex-grow flex flex-col lg:flex-row p-6 gap-6 max-w-7xl mx-auto w-full">
           
           {/* Left Column: Player Visuals & Controls */}
-          <div className="w-full lg:w-2/3 flex flex-col items-center justify-center bg-white rounded-2xl shadow-lg p-8">
+          <div className="w-full lg:w-2/3 flex flex-col justify-between bg-white rounded-2xl shadow-lg p-8 h-full">
             
-            {/* Visual Placeholder: Black Outline with Orange Highlights */}
-            <div className="w-full max-w-lg aspect-video bg-white rounded-3xl border-4 border-black shadow-2xl flex items-center justify-center relative overflow-hidden mb-8">
-              <div className="text-center">
-                {/* Pose Illustration Placeholder */}
-                <div className={`w-32 h-32 rounded-full bg-orange-100 border-4 border-orange-500 flex items-center justify-center mb-4 mx-auto transition-all duration-1000 ${isPlaying ? 'scale-110' : 'scale-100'}`}>
-                   <span className="text-6xl">🧘</span>
+            {/* Visual Area: Black Outline with Orange Highlights (Investor Req) */}
+            <div className="flex-grow flex items-center justify-center mb-8">
+                <div className={`w-64 h-64 rounded-full border-8 border-black flex items-center justify-center bg-white shadow-2xl relative transition-transform duration-700 ${isPlaying ? 'scale-105' : 'scale-100'}`}>
+                    {/* Orange Glow/Highlight inside */}
+                    <div className="absolute inset-2 rounded-full border-4 border-orange-400 opacity-50 animate-pulse"></div>
+                    <span className="text-8xl z-10">🧘</span>
                 </div>
-                <p className="text-xl font-bold text-gray-900">Follow the Flow</p>
-                <p className="text-orange-600 font-medium mt-1">Breathe Deeply</p>
-              </div>
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center gap-8 mb-8">
-               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm" onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}>⏪ 10s</button>
-               
-               {/* Play Button: Orange */}
-               <button onClick={() => setIsPlaying(!isPlaying)} className="w-20 h-20 rounded-full bg-orange-500 text-white flex items-center justify-center text-4xl shadow-xl hover:bg-orange-600 hover:scale-105 transition transform">
-                 {isPlaying ? '⏸' : '▶'}
-               </button>
-               
-               <button className="p-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm" onClick={() => setCurrentTime(Math.min(activeSession.duration_minutes * 60, currentTime + 10))}>10s ⏩</button>
-            </div>
+            {/* Controls & Info */}
+            <div className="w-full">
+                <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Mountain Pose</h2>
+                    <p className="text-orange-500 font-semibold">Hold for 30s • Breathe Deeply</p>
+                </div>
 
-            {/* Timer Bar: Orange Progress over Blue Base */}
-            <div className="w-full max-w-2xl mt-auto">
-              <div className="flex justify-between text-sm font-bold text-gray-600 mb-2">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(activeSession.duration_minutes * 60)}</span>
-              </div>
-              {/* Blue Base */}
-              <div className="w-full h-3 bg-blue-200 rounded-full overflow-hidden">
-                {/* Orange Progress */}
-                <div className="h-full bg-orange-500 transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }}></div>
-              </div>
+                {/* Progress Bar: Orange line over Blue base (Investor Req) */}
+                <div className="w-full h-4 bg-blue-200 rounded-full overflow-hidden mb-6 relative">
+                    <div 
+                        className="h-full bg-orange-500 transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(249,115,22,0.6)]" 
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <span className="text-lg font-mono font-bold text-gray-700">{formatTime(currentTime)}</span>
+                    
+                    {/* Play/Pause Button */}
+                    <button 
+                        onClick={() => setIsPlaying(!isPlaying)} 
+                        className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center text-3xl shadow-xl hover:bg-orange-600 hover:scale-105 transition transform"
+                    >
+                        {isPlaying ? '⏸' : '▶'}
+                    </button>
+                    
+                    <span className="text-lg font-mono font-bold text-gray-500">{formatTime(activeSession.duration_minutes * 60)}</span>
+                </div>
             </div>
           </div>
 
@@ -192,10 +192,9 @@ export default function YogaContent() {
 
   // --- RENDER: LIST VIEW (Default Dashboard View) ---
   return (
-    // Replaced min-h-screen/bg-gray-50 with simple div because App.jsx handles the layout wrapper now
     <div className="flex flex-col gap-6">
       
-      {/* Header - Card Style */}
+      {/* Header */}
       <header className="bg-gradient-to-r from-green-400 to-teal-400 text-white shadow-lg rounded-2xl p-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
              <span className="text-4xl">🧘</span>
