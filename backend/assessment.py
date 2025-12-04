@@ -347,7 +347,9 @@ async def get_assessment_progress(
                 "level": level,
                 "completed": completed,
                 "questions_answered": len(level_results),
-                "unlocked": check_level_access(db, current_user.id, level),
+                "unlocked": (check_level_access(db, current_user.id, level) or
+                             current_user.role == "admin" or
+                             current_user.role == "ADMIN"),
                 "price": LEVEL_PRICES[level],
             }
 
