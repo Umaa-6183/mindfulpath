@@ -16,6 +16,10 @@ import {
 import api from '../config/api.js';
 import { useTheme } from '../context/ThemeContext.jsx'; 
 
+// 1. Import Language Utilities
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
+
 ChartJS.register(
   RadarController,
   RadialLinearScale,
@@ -32,6 +36,9 @@ export default function Report() {
   const [loading, setLoading] = useState(true);
   
   const { isDarkMode } = useTheme(); 
+  
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -85,7 +92,7 @@ export default function Report() {
     labels: report ? Object.keys(report.domain_scores) : [],
     datasets: [
       {
-        label: 'Your Wellness Score',
+        label: t('report.wellnessScore') || 'Your Wellness Score', // Translated Label
         data: report ? Object.values(report.domain_scores) : [],
         borderColor: '#f97316',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -100,7 +107,9 @@ export default function Report() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-orange-500"></div>
-          <p className="mt-4 text-gray-700 dark:text-gray-300">Generating your report...</p>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            {t('common.generatingReport') || "Generating your report..."}
+          </p>
         </div>
       </div>
     );
@@ -110,12 +119,14 @@ export default function Report() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
-          <p className="text-xl text-gray-600 dark:text-gray-300">No assessment data available</p>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            {t('report.noData') || "No assessment data available"}
+          </p>
           <button
             onClick={() => navigate('/dashboard')}
             className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
           >
-            Go to Dashboard
+            {t('common.goToDashboard') || "Go to Dashboard"}
           </button>
         </div>
       </div>
@@ -128,16 +139,16 @@ export default function Report() {
   // Default: Next step is Level 2
   let nextStep = {
     path: '/upgrade/level2',
-    label: 'Unlock Level 2',
-    desc: 'Intensive assessment + 30-day roadmap'
+    label: t('report.unlockLevel2') || 'Unlock Level 2',
+    desc: t('report.level2Desc') || 'Intensive assessment + 30-day roadmap'
   };
 
   // If Level 2 is done, Next step is Level 3
   if (completedLevels.includes(2)) {
     nextStep = {
       path: '/upgrade/level3',
-      label: 'Unlock Level 3',
-      desc: 'Expert coaching + Advanced Metrics'
+      label: t('report.unlockLevel3') || 'Unlock Level 3',
+      desc: t('report.level3Desc') || 'Expert coaching + Advanced Metrics'
     };
   }
 
@@ -145,8 +156,8 @@ export default function Report() {
   if (completedLevels.includes(3)) {
     nextStep = {
       path: '/upgrade/level4', // Assuming this route exists/will exist
-      label: 'Unlock Level 4',
-      desc: 'Mastery Level & Lifetime Access'
+      label: t('report.unlockLevel4') || 'Unlock Level 4',
+      desc: t('report.level4Desc') || 'Mastery Level & Lifetime Access'
     };
   }
 
@@ -157,18 +168,24 @@ export default function Report() {
       <header className="bg-gradient-to-r from-orange-400 to-blue-400 text-white shadow-lg">
         <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Your Wellness Report</h1>
+            <h1 className="text-3xl font-bold">
+              {t('report.title') || "Your Wellness Report"}
+            </h1>
             <p className="text-sm mt-2 opacity-90">
-              Generated on {new Date(report.report_generated_at).toLocaleDateString()}
+              {t('report.generatedOn') || "Generated on"} {new Date(report.report_generated_at).toLocaleDateString()}
             </p>
           </div>
-          {/* Dashboard Button */}
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm"
-          >
-            ← Dashboard
-          </button>
+          
+          {/* 3. Action Area: Language Selector + Dashboard Button */}
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm"
+            >
+              ← {t('common.dashboard') || "Dashboard"}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -182,8 +199,12 @@ export default function Report() {
               <div className="text-6xl font-bold text-orange-500 mb-2">
                 {report.overall_score}
               </div>
-              <p className="text-gray-600 dark:text-gray-300">out of 144</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Overall Life Balance Score</p>
+              <p className="text-gray-600 dark:text-gray-300">
+                 {t('report.outOf') || "out of"} 144
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('report.overallScoreLabel') || "Overall Life Balance Score"}
+              </p>
             </div>
 
             <div className="text-center">
@@ -195,7 +216,9 @@ export default function Report() {
             </div>
 
             <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-4">
-              <h4 className="font-bold text-gray-800 dark:text-white mb-2">Recommended Focus</h4>
+              <h4 className="font-bold text-gray-800 dark:text-white mb-2">
+                {t('report.recommendedFocus') || "Recommended Focus"}
+              </h4>
               <p className="text-sm text-gray-700 dark:text-gray-200">{report.overall_stage.recommendation}</p>
             </div>
           </div>
@@ -203,7 +226,7 @@ export default function Report() {
           {/* Radar Chart */}
           <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 text-center">
-              Your Domain Scores
+              {t('report.domainScores') || "Your Domain Scores"}
             </h3>
             <div className="w-full max-w-md mx-auto">
               <Radar data={chartData} options={chartOptions} />
@@ -213,7 +236,9 @@ export default function Report() {
 
         {/* Domain Feedback */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Domain Insights</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+            {t('report.domainInsights') || "Domain Insights"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(report.domain_feedback).map(([domain, feedback]) => (
               <div
@@ -232,7 +257,9 @@ export default function Report() {
                 <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">{feedback.feedback}</p>
                 
                 <div className="bg-blue-50 dark:bg-blue-900 rounded p-3">
-                  <p className="text-xs text-gray-600 dark:text-blue-300 font-semibold mb-2">Recommended Practices:</p>
+                  <p className="text-xs text-gray-600 dark:text-blue-300 font-semibold mb-2">
+                    {t('report.recommendedPractices') || "Recommended Practices:"}
+                  </p>
                   
                   {Array.isArray(feedback.recommendations) ? (
                     <ul className="list-disc list-inside text-xs text-gray-700 dark:text-gray-200">
@@ -255,7 +282,9 @@ export default function Report() {
         {/* Badges Section */}
         {report.badges && report.badges.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Your Achievements</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+               {t('report.achievements') || "Your Achievements"}
+            </h2>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div className="flex flex-wrap gap-x-4 gap-y-6 justify-center">
                 
@@ -280,16 +309,20 @@ export default function Report() {
 
         {/* Next Steps */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg shadow-lg p-8 mb-8 transition-colors">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Next Steps</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+             {t('report.nextSteps') || "Next Steps"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button
               onClick={() => navigate('/recommendations')}
               className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition text-center dark:hover:bg-gray-600"
             >
               <div className="text-2xl mb-2 dark:text-white">🎯</div>
-              <p className="font-semibold text-gray-800 dark:text-white">Get Recommendations</p>
+              <p className="font-semibold text-gray-800 dark:text-white">
+                {t('report.getRecommendations') || "Get Recommendations"}
+              </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                Personalized content based on your scores
+                {t('report.recsDesc') || "Personalized content based on your scores"}
               </p>
             </button>
 
@@ -298,9 +331,11 @@ export default function Report() {
               className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition text-center dark:hover:bg-gray-600"
             >
               <div className="text-2xl mb-2 dark:text-white">📚</div>
-              <p className="font-semibold text-gray-800 dark:text-white">Explore Content</p>
+              <p className="font-semibold text-gray-800 dark:text-white">
+                 {t('report.exploreContent') || "Explore Content"}
+              </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                NLP, Yoga & Meditation resources
+                 {t('report.exploreDesc') || "NLP, Yoga & Meditation resources"}
               </p>
             </button>
 

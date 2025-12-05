@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+// 1. Import Language Utilities
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
 
 import '../styles/theme.css';
 import '../pages/styles/Upgrade.css';
@@ -10,6 +13,8 @@ import '../pages/styles/Upgrade.css';
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +37,7 @@ export default function Login() {
     } catch (err) {
       console.error(err);
       if (err.response && err.response.status === 401) {
-        setError('❌ Invalid email or password.');
+        setError('❌ Invalid email or password.'); // You can use t('auth.invalidError') here later
       } else {
         setError('⚠️ Login failed. Please check your connection.');
       }
@@ -42,11 +47,20 @@ export default function Login() {
   };
 
   return (
-    <div className="upgrade-container">
+    <div className="upgrade-container" style={{position: 'relative'}}> 
+      
+      {/* 3. Add Language Selector (Absolute Positioned to not break layout) */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+        <LanguageSelector />
+      </div>
+
       <main className="upgrade-main" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
         <div className="pricing-card" style={{maxWidth: '450px', width: '100%', padding: '2rem'}}>
           
-          <h2 style={{textAlign: 'center', marginBottom: '1.5rem'}}>Welcome Back</h2>
+          {/* 4. Translated Header */}
+          <h2 style={{textAlign: 'center', marginBottom: '1.5rem'}}>
+            {t('auth.welcomeBack') || "Welcome Back"} 
+          </h2>
 
           {/* Red Error Alert Box */}
           {error && (
@@ -66,8 +80,9 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group" style={{marginBottom: '1rem'}}>
+              {/* 5. Translated Label */}
               <label htmlFor="email" style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
-                Email <span style={{color: 'red'}}>*</span>
+                {t('auth.emailLabel')} <span style={{color: 'red'}}>*</span>
               </label>
               <input
                 id="email"
@@ -81,8 +96,9 @@ export default function Login() {
             </div>
 
             <div className="form-group" style={{marginBottom: '1.5rem'}}>
+              {/* 6. Translated Label */}
               <label htmlFor="password" style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
-                Password <span style={{color: 'red'}}>*</span>
+                {t('auth.passwordLabel')} <span style={{color: 'red'}}>*</span>
               </label>
               
               {/* Password Input Wrapper for relative positioning */}
@@ -125,14 +141,16 @@ export default function Login() {
               className="btn btn-primary btn-payment"
               style={{width: '100%', padding: '0.75rem', fontSize: '1rem'}}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {/* 7. Translated Button State */}
+              {loading ? t('common.loading') : t('auth.loginBtn')}
             </button>
           </form>
 
           <p className="payment-note" style={{marginTop: '1.5rem', textAlign: 'center'}}>
-            Don't have an account?{' '}
+            {/* 8. Translated Footer Text */}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" style={{color: 'var(--color-orange)', fontWeight: '600', textDecoration: 'none'}}>
-              Sign Up
+              {t('auth.registerLink')}
             </Link>
           </p>
         </div>

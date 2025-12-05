@@ -2,7 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../config/api'; 
-import { useTheme } from '../context/ThemeContext.jsx'; // For Dark Mode styling
+import { useTheme } from '../context/ThemeContext.jsx'; 
+
+// 1. Import Language Utilities
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ChatBot({ 
   persona = 'general', 
@@ -11,27 +14,35 @@ export default function ChatBot({
   isEmbedded = false // If true, it won't be a floating button
 }) {
   
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+
   const [isOpen, setIsOpen] = useState(isEmbedded); // Starts open if embedded
+  
+  // 3. Translated Initial Message
+  // Note: We use a function or useEffect for state if we want it to update dynamically on language change,
+  // but for the initial load, t() here works. For full reactivity, we can update messages in useEffect.
   const [messages, setMessages] = useState([
-    { role: 'system', text: 'Hello! I am your MindfulPath Assistant. How can I help you today?' }
+    { role: 'system', text: t('chatbot.welcome') || 'Hello! I am your MindfulPath Assistant. How can I help you today?' }
   ]);
+  
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const { isDarkMode } = useTheme(); // Get global theme state
+  const { isDarkMode } = useTheme(); 
 
-  // Define appearance based on persona (same as before)
-  let headerTitle = 'MindfulPath Assistant';
+  // Define appearance based on persona
+  let headerTitle = t('chatbot.assistant') || 'MindfulPath Assistant';
   let headerIcon = '💬';
 
   if (persona === 'yoga') {
-    headerTitle = 'Yoga Coach';
+    headerTitle = t('chatbot.yogaCoach') || 'Yoga Coach';
     headerIcon = '🧘';
   } else if (persona === 'meditation') {
-    headerTitle = 'Meditation Guide';
+    headerTitle = t('chatbot.meditationGuide') || 'Meditation Guide';
     headerIcon = '🧘‍♂️';
   } else if (persona === 'nlp') {
-    headerTitle = 'NLP Journaling Guide';
+    headerTitle = t('chatbot.nlpGuide') || 'NLP Journaling Guide';
     headerIcon = '🧠';
   }
 
@@ -47,13 +58,19 @@ export default function ChatBot({
   // Handle assessment-based welcome message (for specialized bots)
   useEffect(() => {
     if (isOpen && messages.length === 1 && assessmentData && assessmentData.low_score_domain) {
+      // Note: constructing complex translated strings with variables is easier with template literals or a dedicated interpolation helper.
+      // For simplicity here, we assume English structure or a simple append if specific translations aren't set up for this dynamic sentence.
+      const welcomeText = t('chatbot.assessmentWelcome') 
+        ? `${t('chatbot.assessmentWelcome')} **${assessmentData.low_score_domain}**. ${t('chatbot.goalAsk')}`
+        : `Based on your low score in **${assessmentData.low_score_domain}**, I suggest we focus on a short exercise now. What's your current goal?`;
+
       const welcomeMsg = { 
         role: 'system', 
-        text: `Based on your low score in **${assessmentData.low_score_domain}**, I suggest we focus on a short exercise now. What's your current goal?` 
+        text: welcomeText
       };
       setTimeout(() => setMessages(prev => [...prev, welcomeMsg]), 500); 
     }
-  }, [isOpen, assessmentData]);
+  }, [isOpen, assessmentData, t]); // Added t dependency
 
 
   const handleSend = async (e) => {
@@ -82,7 +99,7 @@ export default function ChatBot({
 
     } catch (error) {
       console.error("Chat Error", error);
-      const errorMsg = { role: 'system', text: "I'm having trouble connecting to the AI. Please ensure the backend is running." };
+      const errorMsg = { role: 'system', text: t('chatbot.error') || "I'm having trouble connecting to the AI. Please ensure the backend is running." };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
@@ -111,7 +128,7 @@ export default function ChatBot({
               <span className="text-2xl">{headerIcon}</span>
               <div>
                 <h3 className="font-bold text-sm">{headerTitle}</h3>
-                <p className="text-xs opacity-90">Online</p>
+                <p className="text-xs opacity-90">{t('chatbot.online') || "Online"}</p>
               </div>
             </div>
             {!isEmbedded && (
@@ -141,7 +158,7 @@ export default function ChatBot({
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-xs p-2 rounded-xl animate-pulse">
-                  Thinking...
+                  {t('chatbot.thinking') || "Thinking..."}
                 </div>
               </div>
             )}
@@ -154,7 +171,7 @@ export default function ChatBot({
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={`Ask your ${persona} coach...`}
+              placeholder={`${t('chatbot.ask') || "Ask your"} ${persona} ${t('chatbot.coach') || "coach"}...`}
               // Input text area styling (Spec: White bg, Black text)
               className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
               disabled={loading}

@@ -6,30 +6,14 @@ import api from '../../config/api.js';
 import ChatBot from '../../components/ChatBot.jsx'; 
 import '../../styles/theme.css'; 
 
-// --- Static Educational Content (Fallback) ---
-const MeditationEducationalContent = (
-  <div className="space-y-10">
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-indigo-500 transition-colors">
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-        <span className="text-indigo-500 mr-3">✨</span>The Science and Practice of Meditation
-      </h2>
-      <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-        Meditation is the practice of training attention and awareness, and achieving a mentally clear and emotionally calm and stable state.
-      </p>
-    </div>
-    <div className="bg-indigo-50 dark:bg-gray-700 rounded-xl p-6 shadow transition-colors">
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">🔑 Starting Your Practice</h3>
-      <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 ml-4">
-        <li><b>Find a Comfortable Seat:</b> Keep your spine straight but relaxed.</li>
-        <li><b>Focus on the Anchor:</b> Use your breath as the point of focus.</li>
-        <li><b>Return Gently:</b> When your mind wanders, bring it back without judgment.</li>
-      </ul>
-    </div>
-  </div>
-);
+// 1. Import Language Utilities
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function MeditationContent() {
   const navigate = useNavigate();
+  
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
   
   // Data State
   const [content, setContent] = useState([]);
@@ -41,6 +25,29 @@ export default function MeditationContent() {
   const [timeLeft, setTimeLeft] = useState(0); 
   const [isNightMode, setIsNightMode] = useState(false); // Toggle for specific player UI
 
+  // --- Static Educational Content (Fallback) - Moved inside component for translations ---
+  const MeditationEducationalContent = (
+    <div className="space-y-10">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-indigo-500 transition-colors">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <span className="text-indigo-500 mr-3">✨</span>
+          {t('meditation.scienceTitle') || "The Science and Practice of Meditation"}
+        </h2>
+        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+          {t('meditation.scienceDesc') || "Meditation is the practice of training attention and awareness, and achieving a mentally clear and emotionally calm and stable state."}
+        </p>
+      </div>
+      <div className="bg-indigo-50 dark:bg-gray-700 rounded-xl p-6 shadow transition-colors">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">🔑 {t('meditation.startingPractice') || "Starting Your Practice"}</h3>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 ml-4">
+          <li><b>{t('meditation.step1Title') || "Find a Comfortable Seat"}:</b> {t('meditation.step1Desc') || "Keep your spine straight but relaxed."}</li>
+          <li><b>{t('meditation.step2Title') || "Focus on the Anchor"}:</b> {t('meditation.step2Desc') || "Use your breath as the point of focus."}</li>
+          <li><b>{t('meditation.step3Title') || "Return Gently"}:</b> {t('meditation.step3Desc') || "When your mind wanders, bring it back without judgment."}</li>
+        </ul>
+      </div>
+    </div>
+  );
+
   // 1. Fetch Content
   useEffect(() => {
     const fetchContent = async () => {
@@ -49,7 +56,7 @@ export default function MeditationContent() {
         setContent(response.data.content || []);
       } catch (err) {
         console.error('Error fetching Meditation content:', err);
-        // Fallback Data
+        // Fallback Data - Titles can be translated here or in the render loop if keys match
         setContent([
             { id: 1, title: 'Mindful Breathing', description: 'A basic practice to center your attention.', duration_minutes: 5, difficulty_level: 'Beginner' },
             { id: 2, title: 'Body Scan', description: 'Release tension from head to toe.', duration_minutes: 15, difficulty_level: 'All Levels' },
@@ -114,9 +121,7 @@ export default function MeditationContent() {
   // --- RENDER: PLAYER VIEW (Active Session) ---
   if (activeSession) {
     // Dynamic Classes based on Night Mode
-    // FIX: Changed bg-gray-950 to bg-black for Night Mode
     const bgClass = isNightMode ? 'bg-black' : 'bg-blue-50';
-    // FIX: Added glowing text effect for Night Mode
     const textClass = isNightMode ? 'text-blue-100 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]' : 'text-gray-900';
     const subTextClass = isNightMode ? 'text-blue-400' : 'text-gray-500';
     const containerClass = isNightMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-white shadow-xl';
@@ -130,7 +135,7 @@ export default function MeditationContent() {
             onClick={() => setIsNightMode(!isNightMode)} 
             className={`text-sm font-semibold px-4 py-2 rounded-full transition-all border ${isNightMode ? 'bg-gray-800 text-yellow-300 border-gray-700 hover:bg-gray-700' : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50 shadow-sm'}`}
           >
-            {isNightMode ? '🌙 Night Mode' : '☀️ Day Mode'}
+            {isNightMode ? (t('meditation.nightMode') || '🌙 Night Mode') : (t('meditation.dayMode') || '☀️ Day Mode')}
           </button>
           
           <div className="flex flex-col items-center">
@@ -152,8 +157,12 @@ export default function MeditationContent() {
           <div className="w-full lg:w-2/3 flex flex-col items-center justify-center">
             
             <div className="text-center mb-10">
-              <h1 className={`text-4xl font-bold mb-2 transition-all duration-700 ${textClass}`}>{isPlaying ? 'Breathe...' : 'Paused'}</h1>
-              <p className={`${subTextClass} text-lg transition-colors duration-700`}>Focus on the present moment</p>
+              <h1 className={`text-4xl font-bold mb-2 transition-all duration-700 ${textClass}`}>
+                {isPlaying ? (t('meditation.breathe') || 'Breathe...') : (t('meditation.paused') || 'Paused')}
+              </h1>
+              <p className={`${subTextClass} text-lg transition-colors duration-700`}>
+                {t('meditation.focusMsg') || "Focus on the present moment"}
+              </p>
             </div>
 
             {/* SVG TIMER RING */}
@@ -188,7 +197,9 @@ export default function MeditationContent() {
                 <span className={`text-6xl font-mono font-light tracking-tighter ${isNightMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'text-gray-800'}`}>
                     {formatTime(timeLeft)}
                 </span>
-                <span className={`text-sm mt-2 uppercase tracking-widest ${subTextClass}`}>Remaining</span>
+                <span className={`text-sm mt-2 uppercase tracking-widest ${subTextClass}`}>
+                    {t('meditation.remaining') || "Remaining"}
+                </span>
               </div>
             </div>
 
@@ -248,19 +259,21 @@ export default function MeditationContent() {
         <div className="flex items-center gap-3">
              <span className="text-4xl">🧘‍♂️</span>
              <div>
-                <h1 className="text-2xl font-bold">Meditation</h1>
-                <p className="text-white/80 text-sm">Calm, clarity & deep peace</p>
+                <h1 className="text-2xl font-bold">{t('dashboard.meditationTitle') || "Meditation"}</h1>
+                <p className="text-white/80 text-sm">{t('meditation.headerSub') || "Calm, clarity & deep peace"}</p>
              </div>
         </div>
         <button onClick={() => navigate('/dashboard')} className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm">
-            ← Dashboard
+            ← {t('common.dashboard') || "Dashboard"}
         </button>
       </header>
 
       <main className="w-full">
         {content.length === 0 ? MeditationEducationalContent : (
           <>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Available Sessions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              {t('meditation.availableSessions') || "Available Sessions"}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content.map((item) => (
                 <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:scale-[1.02] transition cursor-pointer border border-gray-100 dark:border-gray-700" onClick={() => handleStartSession(item)}>

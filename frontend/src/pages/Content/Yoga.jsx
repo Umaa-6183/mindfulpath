@@ -6,30 +6,15 @@ import api from '../../config/api.js';
 import ChatBot from '../../components/ChatBot.jsx'; 
 import '../../styles/theme.css'; 
 
-// --- Static Educational Content (Fallback) ---
-const YogaEducationalContent = (
-  <div className="space-y-10">
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-teal-500 transition-colors">
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-        <span className="text-teal-500 mr-3">✨</span>
-        The Transformative Power of Yoga
-      </h2>
-      <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-        Yoga is an ancient discipline that brings together physical postures (<b>asanas</b>), breathing techniques (<b>pranayama</b>), and meditation. It fosters harmony between body, mind, and spirit.
-      </p>
-    </div>
-    <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-6 shadow transition-colors">
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">🔑 Starting Your Yoga Flow</h3>
-      <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 ml-4">
-        <li><b>Focus on the Breath:</b> Let your breath guide your movement.</li>
-        <li><b>Find Your Edge:</b> Move into a stretch until you feel comfortable tension.</li>
-      </ul>
-    </div>
-  </div>
-);
+// 1. Import Language Utilities
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function YogaContent() {
   const navigate = useNavigate();
+  
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -38,6 +23,28 @@ export default function YogaContent() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  // --- Static Educational Content (Fallback) - Moved inside component for translations ---
+  const YogaEducationalContent = (
+    <div className="space-y-10">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 border-t-4 border-teal-500 transition-colors">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <span className="text-teal-500 mr-3">✨</span>
+          {t('yoga.eduTitle') || "The Transformative Power of Yoga"}
+        </h2>
+        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+          {t('yoga.eduDesc') || "Yoga is an ancient discipline that brings together physical postures (asanas), breathing techniques (pranayama), and meditation. It fosters harmony between body, mind, and spirit."}
+        </p>
+      </div>
+      <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-6 shadow transition-colors">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">🔑 {t('yoga.startingFlow') || "Starting Your Yoga Flow"}</h3>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 ml-4">
+          <li><b>{t('yoga.step1Title') || "Focus on the Breath"}:</b> {t('yoga.step1Desc') || "Let your breath guide your movement."}</li>
+          <li><b>{t('yoga.step2Title') || "Find Your Edge"}:</b> {t('yoga.step2Desc') || "Move into a stretch until you feel comfortable tension."}</li>
+        </ul>
+      </div>
+    </div>
+  );
 
   // 1. Fetch Content
   useEffect(() => {
@@ -74,10 +81,10 @@ export default function YogaContent() {
       }, 1000);
     } else if (activeSession && currentTime >= (activeSession.duration_minutes * 60)) {
       setIsPlaying(false);
-      alert("Session Complete!");
+      alert(t('common.sessionComplete') || "Session Complete!");
     }
     return () => clearInterval(interval);
-  }, [isPlaying, currentTime, activeSession]);
+  }, [isPlaying, currentTime, activeSession, t]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -117,14 +124,14 @@ export default function YogaContent() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">{activeSession.title}</h1>
             <p className="text-sm text-gray-500">
-              {activeSession.instructor ? `with ${activeSession.instructor}` : 'Guided Flow'}
+              {activeSession.instructor ? `${t('yoga.with') || 'with'} ${activeSession.instructor}` : (t('yoga.guidedFlow') || 'Guided Flow')}
             </p>
           </div>
           <button 
             onClick={handleClosePlayer}
             className="text-gray-500 hover:text-orange-600 font-medium transition flex items-center gap-1"
           >
-            <span className="text-xl">✕</span> Close
+            <span className="text-xl">✕</span> {t('common.close') || "Close"}
           </button>
         </header>
 
@@ -146,8 +153,8 @@ export default function YogaContent() {
             {/* Controls & Info */}
             <div className="w-full">
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Mountain Pose</h2>
-                    <p className="text-orange-500 font-semibold">Hold for 30s • Breathe Deeply</p>
+                    <h2 className="text-2xl font-bold text-gray-800">{t('yoga.poseName') || "Mountain Pose"}</h2>
+                    <p className="text-orange-500 font-semibold">{t('yoga.holdInstruction') || "Hold for 30s • Breathe Deeply"}</p>
                 </div>
 
                 {/* Progress Bar: Orange line over Blue base (Investor Req) */}
@@ -199,19 +206,21 @@ export default function YogaContent() {
         <div className="flex items-center gap-3">
              <span className="text-4xl">🧘</span>
              <div>
-                <h1 className="text-2xl font-bold">Yoga Flows</h1>
-                <p className="text-white/80 text-sm">Strength, balance & awareness</p>
+                <h1 className="text-2xl font-bold">{t('dashboard.yogaTitle') || "Yoga Flows"}</h1>
+                <p className="text-white/80 text-sm">{t('yoga.headerSub') || "Strength, balance & awareness"}</p>
              </div>
         </div>
         <button onClick={() => navigate('/dashboard')} className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition backdrop-blur-sm">
-            ← Dashboard
+            ← {t('common.dashboard') || "Dashboard"}
         </button>
       </header>
 
       <main className="w-full">
         {content.length === 0 ? YogaEducationalContent : (
           <>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Available Flows</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              {t('yoga.availableFlows') || "Available Flows"}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content.map((item) => (
                 <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:scale-[1.02] transition cursor-pointer border border-gray-100 dark:border-gray-700" onClick={() => handleStartSession(item)}>

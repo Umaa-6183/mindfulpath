@@ -2,11 +2,18 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../config/api.js'; // Using direct API for clearer error handling
+import api from '../config/api.js'; 
+
+// 1. Import Language Utilities
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
 
 export default function Register() {
   const navigate = useNavigate();
   
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+
   // Form State
   const [formData, setFormData] = useState({
     first_name: '',
@@ -38,7 +45,7 @@ export default function Register() {
     }
   };
 
-  // Validation Logic
+  // Validation Logic (Kept mostly stable, errors can be translated later if needed)
   const validateForm = () => {
     const errors = {};
     const pwd = formData.password;
@@ -96,12 +103,24 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+    // Added 'relative' to container to position the absolute LanguageSelector correctly
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8 relative">
+      
+      {/* 3. Language Selector Positioned Top-Right */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSelector />
+      </div>
+
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
         
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
-          <p className="text-gray-500 mt-2 text-sm">Join MindfulPath today</p>
+          {/* 4. Translated Header & Subheader */}
+          <h2 className="text-3xl font-bold text-gray-900">
+             {t('auth.registerBtn')} {/* Reusing 'Create Account' key */}
+          </h2>
+          <p className="text-gray-500 mt-2 text-sm">
+             {t('heroTitle') ? "Join MindfulPath today" : "Join MindfulPath today"} {/* Placeholder if specific key missing */}
+          </p>
         </div>
 
         {/* Global Error Message */}
@@ -116,7 +135,9 @@ export default function Register() {
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                {t('auth.firstName') || "First Name"}
+              </label>
               <input
                 name="first_name"
                 type="text"
@@ -126,7 +147,9 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                {t('auth.lastName') || "Last Name"}
+              </label>
               <input
                 name="last_name"
                 type="text"
@@ -140,7 +163,7 @@ export default function Register() {
           {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email <span className="text-red-500">*</span>
+              {t('auth.emailLabel')} <span className="text-red-500">*</span>
             </label>
             <input
               name="email"
@@ -156,7 +179,7 @@ export default function Register() {
           {/* Password with Toggle */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Password <span className="text-red-500">*</span>
+              {t('auth.passwordLabel')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -166,14 +189,14 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                placeholder="Min. 8 chars, 1 upper, 1 special..."
+                placeholder="Min. 8 chars, 1 upper..."
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm font-medium"
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t('common.hide') || "Hide" : t('common.show') || "Show"}
               </button>
             </div>
             {fieldErrors.password ? (
@@ -238,14 +261,15 @@ export default function Register() {
                 : 'bg-orange-500 hover:bg-orange-600 hover:shadow-lg'
             }`}
           >
-            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+            {/* Translated Button Text */}
+            {isSubmitting ? t('common.loading') : t('auth.registerBtn')}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link to="/login" className="font-semibold text-orange-600 hover:text-orange-500 hover:underline">
-            Sign In
+            {t('auth.loginLink')}
           </Link>
         </p>
       </div>

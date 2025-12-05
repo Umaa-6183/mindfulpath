@@ -3,10 +3,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
-import '../styles/Upgrade.css'; // Uses your new, professional CSS
+import '../styles/Upgrade.css'; 
+
+// 1. Import Language Utilities
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../../components/LanguageSelector';
 
 export default function UpgradeLevel2() {
   const navigate = useNavigate();
+  
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+  
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +25,6 @@ export default function UpgradeLevel2() {
     GBP: { price: 5, symbol: '£', locale: 'en-GB' },
   };
 
-  // --- THIS IS THE NEW, CORRECT PAYPAL LOGIC ---
   const handlePayment = async () => {
     setLoading(true);
     setError('');
@@ -25,32 +32,37 @@ export default function UpgradeLevel2() {
     try {
       // 1. Call your backend's /create-order endpoint
       const response = await api.post('/payments/create-order', {
-        level: 2, // This page is for Level 2
-        currency: currency // Use the currency from the component's state
+        level: 2, 
+        currency: currency 
       });
 
       // 2. Get the approval_url from the response
       const { approval_url } = response.data;
 
       // 3. Redirect the user to PayPal
-      // This will navigate the user away from your site to PayPal
       window.location.href = approval_url;
 
     } catch (err) {
       console.error('Error creating order:', err);
-      setError(err.response?.data?.detail || 'Failed to create payment order');
-      setLoading(false); // Only set loading to false if there's an error
+      setError(err.response?.data?.detail || t('common.errorPayment') || 'Failed to create payment order');
+      setLoading(false); 
     }
   };
-  // --- END OF NEW LOGIC ---
 
   return (
-    <div className="upgrade-container">
+    // Added 'relative' to container to support absolute positioning of the language selector
+    <div className="upgrade-container" style={{ position: 'relative' }}>
+      
+      {/* 3. Language Selector Positioned Top-Right */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+        <LanguageSelector />
+      </div>
+
       {/* Header */}
       <header className="upgrade-header">
         <div className="header-content">
-          <h1>Unlock Level 2</h1>
-          <p>Extended Assessment for Deeper Insights</p>
+          <h1>{t('upgrade.level2Title') || "Unlock Level 2"}</h1>
+          <p>{t('upgrade.level2Subtitle') || "Extended Assessment for Deeper Insights"}</p>
         </div>
       </header>
 
@@ -59,34 +71,34 @@ export default function UpgradeLevel2() {
         <div className="upgrade-wrapper">
           {/* Benefits Section */}
           <div className="benefits-card">
-            <h2>What You'll Get</h2>
+            <h2>{t('upgrade.benefitsTitle') || "What You'll Get"}</h2>
             <ul className="benefits-list">
               <li>
                 <span className="benefit-icon">✅</span>
                 <div>
-                  <strong>12 Advanced Questions</strong>
-                  <p>Exploring deeper patterns across 12 life domains</p>
+                  <strong>{t('upgrade.benefit1Title') || "12 Advanced Questions"}</strong>
+                  <p>{t('upgrade.benefit1Desc') || "Exploring deeper patterns across 12 life domains"}</p>
                 </div>
               </li>
               <li>
                 <span className="benefit-icon">✅</span>
                 <div>
-                  <strong>NLP-Based Reflection</strong>
-                  <p>Questions to uncover limiting beliefs</p>
+                  <strong>{t('upgrade.benefit2Title') || "NLP-Based Reflection"}</strong>
+                  <p>{t('upgrade.benefit2Desc') || "Questions to uncover limiting beliefs"}</p>
                 </div>
               </li>
               <li>
                 <span className="benefit-icon">✅</span>
                 <div>
-                  <strong>Personalized Feedback</strong>
-                  <p>Tailored to your responses</p>
+                  <strong>{t('upgrade.benefit3Title') || "Personalized Feedback"}</strong>
+                  <p>{t('upgrade.benefit3Desc') || "Tailored to your responses"}</p>
                 </div>
               </li>
               <li>
                 <span className="benefit-icon">✅</span>
                 <div>
-                  <strong>Cumulative Scoring</strong>
-                  <p>That builds on Level 1 results</p>
+                  <strong>{t('upgrade.benefit4Title') || "Cumulative Scoring"}</strong>
+                  <p>{t('upgrade.benefit4Desc') || "That builds on Level 1 results"}</p>
                 </div>
               </li>
             </ul>
@@ -94,7 +106,7 @@ export default function UpgradeLevel2() {
 
           {/* Pricing Section */}
           <div className="pricing-card">
-            <h2>Choose Your Currency</h2>
+            <h2>{t('upgrade.chooseCurrency') || "Choose Your Currency"}</h2>
             
             {error && <div className="error-message">{error}</div>}
 
@@ -119,50 +131,50 @@ export default function UpgradeLevel2() {
               disabled={loading}
               className="btn btn-primary btn-lg btn-payment"
             >
-              {loading ? 'Redirecting to PayPal...' : 'Pay with PayPal'}
+              {loading ? (t('upgrade.redirecting') || 'Redirecting to PayPal...') : (t('upgrade.payBtn') || 'Pay with PayPal')}
             </button>
 
             <p className="payment-note">
-              🔒 You will be redirected to PayPal to complete your payment.
+              🔒 {t('upgrade.paypalNote') || "You will be redirected to PayPal to complete your payment."}
             </p>
           </div>
 
           {/* Comparison Table */}
           <div className="comparison-card">
-            <h3>Assessment Levels Comparison</h3>
+            <h3>{t('upgrade.comparisonTitle') || "Assessment Levels Comparison"}</h3>
             <table className="comparison-table">
               <thead>
                 <tr>
-                  <th>Feature</th>
-                  <th>Level 1</th>
-                  <th>Level 2</th>
-                  <th>Level 3</th>
+                  <th>{t('upgrade.feature') || "Feature"}</th>
+                  <th>{t('upgrade.level1') || "Level 1"}</th>
+                  <th>{t('upgrade.level2') || "Level 2"}</th>
+                  <th>{t('upgrade.level3') || "Level 3"}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Questions</td>
+                  <td>{t('upgrade.questions') || "Questions"}</td>
                   <td>12</td>
                   <td>12</td>
                   <td>12</td>
                 </tr>
                 <tr>
-                  <td>Price</td>
-                  <td>Free</td>
+                  <td>{t('upgrade.price') || "Price"}</td>
+                  <td>{t('upgrade.free') || "Free"}</td>
                   <td>{prices[currency].symbol}{prices[currency].price}</td>
                   <td>-</td>
                 </tr>
                 <tr>
-                  <td>Depth</td>
-                  <td>Foundational</td>
-                  <td>⭐ Intermediate</td>
-                  <td>Advanced</td>
+                  <td>{t('upgrade.depth') || "Depth"}</td>
+                  <td>{t('upgrade.foundational') || "Foundational"}</td>
+                  <td>⭐ {t('upgrade.intermediate') || "Intermediate"}</td>
+                  <td>{t('upgrade.advanced') || "Advanced"}</td>
                 </tr>
                 <tr>
-                  <td>Feedback</td>
-                  <td>Basic</td>
-                  <td>⭐ Detailed</td>
-                  <td>Comprehensive</td>
+                  <td>{t('upgrade.feedback') || "Feedback"}</td>
+                  <td>{t('upgrade.basic') || "Basic"}</td>
+                  <td>⭐ {t('upgrade.detailed') || "Detailed"}</td>
+                  <td>{t('upgrade.comprehensive') || "Comprehensive"}</td>
                 </tr>
               </tbody>
             </table>
@@ -176,7 +188,7 @@ export default function UpgradeLevel2() {
           onClick={() => navigate('/dashboard')}
           className="btn btn-outline"
         >
-          ← Back to Dashboard
+          ← {t('common.backToDashboard') || "Back to Dashboard"}
         </button>
       </footer>
     </div>

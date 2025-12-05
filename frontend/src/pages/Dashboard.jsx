@@ -1,9 +1,13 @@
-// /frontend/src/pages/Dashboard.jsx (SMART START UPDATE)
+// /frontend/src/pages/Dashboard.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import api from '../config/api.js';
+
+// 1. Import Language Utilities
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
 
 // Import Chart.js components
 import { Radar } from 'react-chartjs-2';
@@ -66,6 +70,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+  
   const [loading, setLoading] = useState(true);
   const [assessmentProgress, setAssessmentProgress] = useState(null);
   const [gamificationProgress, setGamificationProgress] = useState(null);
@@ -112,24 +119,19 @@ export default function Dashboard() {
 
   // --- NEW: Smart Start Logic ---
   const handleSmartStart = () => {
-    // Condition 1: Check if Level 1 is completed
-    // We check assessmentProgress.level_1.completed (assuming API structure)
-    // Or we check if 'report' exists (since report is generated after Level 1)
     const isLevel1Done = report !== null || assessmentProgress?.level_1?.completed;
 
     if (!isLevel1Done) {
-        // Condition 1: Not Done -> Alert & Redirect
         const confirm = window.confirm("🔒 Please complete your Level 1 Assessment to unlock your personalized practice tools.\n\nGo to Assessment now?");
         if (confirm) {
             navigate('/assessment/level1');
         }
     } else {
-        // Condition 2: Done -> Show Activity Selection
         setShowActivityModal(true);
     }
   };
 
-  // Old manual log logic (Preserved)
+  // Old manual log logic
   const handleLogPractice = async () => {
     try {
       await api.post('/gamification/practice/log', {
@@ -151,7 +153,7 @@ export default function Dashboard() {
     labels: report ? Object.keys(report.domain_scores) : [],
     datasets: [
       {
-        label: 'Your Wellness Score',
+        label: t('dashboard.wellnessGraph') || 'Your Wellness Score', // Translated Label
         data: report ? Object.values(report.domain_scores) : [],
         borderColor: '#f97316', 
         backgroundColor: 'rgba(59, 130, 246, 0.1)', 
@@ -193,7 +195,7 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-orange-500"></div>
-          <p className="mt-4 text-gray-700 dark:text-gray-300">Loading Dashboard...</p>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">{t('common.loading') || "Loading Dashboard..."}</p>
         </div>
       </div>
     );
@@ -207,15 +209,25 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold">Welcome back, {user?.first_name || user?.email.split('@')[0]}!</h1>
-              <p className="text-sm opacity-90 mt-1">Here is your wellness overview. Ready to continue your journey?</p>
+              {/* 3. Translated Welcome */}
+              <h1 className="text-3xl font-bold">
+                {t('dashboard.welcomeBack') || "Welcome back"}, {user?.first_name || user?.email.split('@')[0]}!
+              </h1>
+              <p className="text-sm opacity-90 mt-1">
+                {t('dashboard.welcomeSub') || "Here is your wellness overview. Ready to continue your journey?"}
+              </p>
             </div>
-            <button
-              onClick={logout} 
-              className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition shrink-0"
-            >
-              Logout
-            </button>
+            
+            {/* 4. Action Area with Language Selector */}
+            <div className="flex items-center gap-4">
+              <LanguageSelector />
+              <button
+                onClick={logout} 
+                className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium hover:bg-white/30 transition shrink-0"
+              >
+                {t('common.logout') || "Logout"}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -225,12 +237,14 @@ export default function Dashboard() {
       
         {/* --- 1. Quick Stats & Smart Start Button --- */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Your Quick Stats</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {t('dashboard.quickStats') || "Your Quick Stats"}
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard icon="🔥" value={gamificationProgress?.current_streak || 0} label="Day Streak" />
-            <StatCard icon="🏆" value={gamificationProgress?.badges_earned || 0} label="Badges Earned" />
-            <StatCard icon="📊" value={gamificationProgress?.total_sessions || 0} label="Total Sessions" />
-            <StatCard icon="⏱️" value={gamificationProgress?.total_minutes || 0} label="Minutes Practiced" />
+            <StatCard icon="🔥" value={gamificationProgress?.current_streak || 0} label={t('dashboard.dayStreak') || "Day Streak"} />
+            <StatCard icon="🏆" value={gamificationProgress?.badges_earned || 0} label={t('dashboard.badgesEarned') || "Badges Earned"} />
+            <StatCard icon="📊" value={gamificationProgress?.total_sessions || 0} label={t('dashboard.totalSessions') || "Total Sessions"} />
+            <StatCard icon="⏱️" value={gamificationProgress?.total_minutes || 0} label={t('dashboard.minutesPracticed') || "Minutes Practiced"} />
           </div>
           
           {/* SMART START BUTTON */}
@@ -239,17 +253,17 @@ export default function Dashboard() {
               onClick={handleSmartStart}
               className="px-8 py-4 bg-orange-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-orange-600 hover:scale-105 transition transform flex items-center gap-2"
             >
-              <span>▶️</span> Start Your Practice
+              <span>▶️</span> {t('dashboard.startPractice') || "Start Your Practice"}
             </button>
             
             {/* Optional Manual Log Link */}
             <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Practiced offline? 
+                {t('dashboard.offlineLog') || "Practiced offline?"} 
                 <button 
                     onClick={() => setShowManualLogModal(true)}
                     className="ml-1 text-blue-600 hover:underline font-semibold"
                 >
-                    Log manually here
+                    {t('dashboard.logManually') || "Log manually here"}
                 </button>
             </p>
           </div>
@@ -260,83 +274,144 @@ export default function Dashboard() {
           
           {/* Wellness Score Graph */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Wellness Score Graph</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+               {t('dashboard.wellnessGraph') || "Wellness Score Graph"}
+            </h2>
             {report ? (
               <div className="h-80 md:h-96">
                 <Radar data={chartData} options={chartOptions} />
               </div>
             ) : (
               <div className="flex items-center justify-center h-80">
-                <p className="text-gray-600 dark:text-gray-400">Complete your Level 1 Assessment to see your wellness graph.</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {t('dashboard.noGraph') || "Complete your Level 1 Assessment to see your wellness graph."}
+                </p>
               </div>
             )}
           </div>
 
           {/* Assessment History */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Assessment History</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('dashboard.assessmentHistory') || "Assessment History"}
+            </h2>
             <div className="space-y-4">
               
               {/* Level 1 */}
               <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">Level 1 Assessment</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Baseline Score</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{t('dashboard.level1') || "Level 1 Assessment"}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.level1Sub') || "Baseline Score"}</p>
                 </div>
                 {assessmentProgress?.level_1.completed ? (
-                  <span className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0">Completed</span>
+                  // --- CHANGE 1: Made Completed Badge Clickable ---
+                  <button 
+                    onClick={() => navigate('/report')}
+                    className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
+                    title={t('dashboard.viewReport') || "View Report"}
+                  >
+                    {t('dashboard.completed') || "Completed"}
+                  </button>
                 ) : (
-                  <button onClick={() => navigate('/assessment/level1')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">Start</button>
+                  <button onClick={() => navigate('/assessment/level1')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">
+                    {t('dashboard.start') || "Start"}
+                  </button>
                 )}
               </div>
               
               {/* Level 2 */}
               <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">Level 2 Assessment</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Deeper Insights</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{t('dashboard.level2') || "Level 2 Assessment"}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.level2Sub') || "Deeper Insights"}</p>
                 </div>
                 {!assessmentProgress?.level_2.unlocked ? (
-                  <button onClick={() => navigate('/upgrade/level2')} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition shrink-0">Unlock</button>
+                  <button onClick={() => navigate('/upgrade/level2')} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition shrink-0">
+                    {t('dashboard.unlock') || "Unlock"}
+                  </button>
                 ) : assessmentProgress?.level_2.completed ? (
-                  <span className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0">Completed</span>
+                  // --- CHANGE 2: Made Completed Badge Clickable ---
+                  <button 
+                    onClick={() => navigate('/report')}
+                    className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
+                    title={t('dashboard.viewReport') || "View Report"}
+                  >
+                    {t('dashboard.completed') || "Completed"}
+                  </button>
                 ) : (
-                  <button onClick={() => navigate('/assessment/level2')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">Start</button>
+                  <button onClick={() => navigate('/assessment/level2')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">
+                    {t('dashboard.start') || "Start"}
+                  </button>
                 )}
               </div>
               
               {/* Level 3 */}
               <div className="flex items-center justify-between py-3">
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">Level 3 Assessment</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">30-Day Roadmap</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{t('dashboard.level3') || "Level 3 Assessment"}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.level3Sub') || "30-Day Roadmap"}</p>
                 </div>
                 {!assessmentProgress?.level_3.unlocked ? (
-                  <button onClick={() => navigate('/upgrade/level3')} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition shrink-0">Unlock</button>
+                  <button onClick={() => navigate('/upgrade/level3')} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition shrink-0">
+                    {t('dashboard.unlock') || "Unlock"}
+                  </button>
                 ) : assessmentProgress?.level_3.completed ? (
-                  <span className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0">Completed</span>
+                  // --- CHANGE 3: Made Completed Badge Clickable ---
+                  <button 
+                    onClick={() => navigate('/report')}
+                    className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
+                    title={t('dashboard.viewReport') || "View Report"}
+                  >
+                    {t('dashboard.completed') || "Completed"}
+                  </button>
                 ) : (
-                  <button onClick={() => navigate('/assessment/level3')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">Start</button>
+                  <button onClick={() => navigate('/assessment/level3')} className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition shrink-0">
+                    {t('dashboard.start') || "Start"}
+                  </button>
                 )}
               </div>
               
             </div>
-            <button onClick={() => navigate('/report')} className="w-full mt-6 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition" disabled={!report}>View Full Report</button>
+            <button onClick={() => navigate('/report')} className="w-full mt-6 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition" disabled={!report}>
+              {t('dashboard.viewReport') || "View Full Report"}
+            </button>
           </div>
         </div>
 
         {/* --- 3. Navigation Cards & Daily Log --- */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Practice Tools</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+             {t('dashboard.practiceTools') || "Practice Tools"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            <NavCard icon="🧠" title="NLP Journaling" description="Transform your thoughts." to="/content/nlp" color="orange" />
-            <NavCard icon="🧘" title="Yoga Flows" description="Connect mind and body." to="/content/yoga" color="blue" />
-            <NavCard icon="🧘‍♂️" title="Meditation" description="Find inner calm." to="/content/meditation" color="blue" />
+            <NavCard 
+                icon="🧠" 
+                title={t('dashboard.nlpTitle') || "NLP Journaling"} 
+                description={t('dashboard.nlpDesc') || "Transform your thoughts."} 
+                to="/content/nlp" 
+                color="orange" 
+            />
+            <NavCard 
+                icon="🧘" 
+                title={t('dashboard.yogaTitle') || "Yoga Flows"} 
+                description={t('dashboard.yogaDesc') || "Connect mind and body."} 
+                to="/content/yoga" 
+                color="blue" 
+            />
+            <NavCard 
+                icon="🧘‍♂️" 
+                title={t('dashboard.meditationTitle') || "Meditation"} 
+                description={t('dashboard.meditationDesc') || "Find inner calm."} 
+                to="/content/meditation" 
+                color="blue" 
+            />
 
             {/* Daily Log Card */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 border-l-4 border-orange-500">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Logs</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                {t('dashboard.recentLogs') || "Recent Logs"}
+              </h3>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {dailyLogs.length > 0 ? (
                   dailyLogs.map(log => (
@@ -352,7 +427,9 @@ export default function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">No recent logs. Start a session above!</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('dashboard.noLogs') || "No recent logs. Start a session above!"}
+                  </p>
                 )}
               </div>
             </div>
@@ -371,7 +448,7 @@ export default function Dashboard() {
                 >✕</button>
                 
                 <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">
-                    What would you like to practice?
+                    {t('dashboard.startPractice') || "What would you like to practice?"}
                 </h2>
                 <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
                     Choose a session to start now.
@@ -380,17 +457,26 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 gap-4">
                     <button onClick={() => navigate('/content/meditation')} className="flex items-center p-4 rounded-xl border-2 border-indigo-100 hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-700 dark:hover:bg-gray-700 transition group text-left">
                         <span className="text-4xl mr-4">🧘‍♂️</span>
-                        <div><h3 className="font-bold text-gray-900 dark:text-white">Meditation</h3><p className="text-sm text-gray-500 dark:text-gray-300">Calm & Focus</p></div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{t('dashboard.meditationTitle') || "Meditation"}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-300">Calm & Focus</p>
+                        </div>
                     </button>
 
                     <button onClick={() => navigate('/content/yoga')} className="flex items-center p-4 rounded-xl border-2 border-green-100 hover:border-green-500 hover:bg-green-50 dark:border-gray-700 dark:hover:bg-gray-700 transition group text-left">
                         <span className="text-4xl mr-4">🧘</span>
-                        <div><h3 className="font-bold text-gray-900 dark:text-white">Yoga Flows</h3><p className="text-sm text-gray-500 dark:text-gray-300">Movement & Breath</p></div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{t('dashboard.yogaTitle') || "Yoga Flows"}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-300">Movement & Breath</p>
+                        </div>
                     </button>
 
                     <button onClick={() => navigate('/content/nlp')} className="flex items-center p-4 rounded-xl border-2 border-blue-100 hover:border-blue-500 hover:bg-blue-50 dark:border-gray-700 dark:hover:bg-gray-700 transition group text-left">
                         <span className="text-4xl mr-4">🧠</span>
-                        <div><h3 className="font-bold text-gray-900 dark:text-white">NLP Journaling</h3><p className="text-sm text-gray-500 dark:text-gray-300">Reframe Thoughts</p></div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{t('dashboard.nlpTitle') || "NLP Journaling"}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-300">Reframe Thoughts</p>
+                        </div>
                     </button>
                 </div>
             </div>
@@ -401,7 +487,9 @@ export default function Dashboard() {
       {showManualLogModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Log Offline Practice</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                {t('dashboard.offlineLog') || "Log Offline Practice"}
+              </h2>
               <div className="space-y-5">
                 <div>
                   <label htmlFor="practiceType" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Practice Type</label>
@@ -416,8 +504,12 @@ export default function Dashboard() {
                   <input id="duration" type="number" value={duration} onChange={(e) => setDuration(e.target.value)} min="1" max="600" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <button onClick={() => setShowManualLogModal(false)} className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
-                  <button onClick={handleLogPractice} className="flex-1 px-4 py-2 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">Log Entry</button>
+                  <button onClick={() => setShowManualLogModal(false)} className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    {t('common.cancel') || "Cancel"}
+                  </button>
+                  <button onClick={handleLogPractice} className="flex-1 px-4 py-2 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">
+                    {t('common.submit') || "Log Entry"}
+                  </button>
                 </div>
               </div>
             </div>

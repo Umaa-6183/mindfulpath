@@ -6,22 +6,31 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import api from '../../config/api.js';
 import '../styles/Assessment.css'; // This path is correct
 
-const ANSWER_OPTIONS = {
-  "A": "Empowered / Integrated / Breakthrough",
-  "B": "Stable / Aware / Growing",
-  "C": "Struggling / Limited / Reactive",
-  "D": "Beginning / Exploring / Needs Support"
-};
+// 1. Import Language Utilities
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../../components/LanguageSelector';
 
 export default function Level2Assessment() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // 2. Initialize Translation Hook
+  const { t } = useLanguage();
+
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [error, setError] = useState('');
+
+  // 3. Define Options inside component to enable translation
+  const ANSWER_OPTIONS = {
+    "A": t('assessment.optionA') || "Empowered / Integrated / Breakthrough",
+    "B": t('assessment.optionB') || "Stable / Aware / Growing",
+    "C": t('assessment.optionC') || "Struggling / Limited / Reactive",
+    "D": t('assessment.optionD') || "Beginning / Exploring / Needs Support"
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -30,14 +39,14 @@ export default function Level2Assessment() {
         setQuestions(response.data.questions);
       } catch (err) {
         console.error('Error fetching questions:', err);
-        setError('Failed to load assessment. You may not have access to this level.');
+        setError(t('common.errorAccess') || 'Failed to load assessment. You may not have access to this level.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuestions();
-  }, [navigate]);
+  }, [navigate, t]);
 
   const handleAnswerChange = (questionIndex, answerKey) => {
     setAnswers((prev) => ({
@@ -49,7 +58,7 @@ export default function Level2Assessment() {
 
   const handleNext = () => {
     if (!answers[currentQuestion]) {
-      setError('Please select an answer to continue.');
+      setError(t('assessment.selectAnswerError') || 'Please select an answer to continue.');
       return;
     }
     if (currentQuestion < questions.length - 1) {
@@ -65,7 +74,7 @@ export default function Level2Assessment() {
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length !== questions.length) {
-      setError('Please answer all questions before submitting.');
+      setError(t('assessment.answerAllError') || 'Please answer all questions before submitting.');
       return;
     }
 
@@ -80,12 +89,12 @@ export default function Level2Assessment() {
 
       await api.post('/assessment/submit/2', { answers: formattedAnswers });
       
-      alert('Level 2 submitted! View your updated report.');
+      alert(t('assessment.level2SubmitSuccess') || 'Level 2 submitted! View your updated report.');
       navigate('/report'); // Go to the Report page
 
     } catch (err) {
       console.error('Error submitting assessment:', err);
-      setError(err.response?.data?.detail || 'Failed to submit assessment');
+      setError(err.response?.data?.detail || t('common.errorSubmit') || 'Failed to submit assessment');
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +105,7 @@ export default function Level2Assessment() {
       <div className="assessment-loading">
         <div className="spinner-container">
           <div className="spinner"></div>
-          <p>Loading Level 2 Assessment...</p>
+          <p>{t('common.loading') || "Loading Level 2 Assessment..."}</p>
         </div>
       </div>
     );
@@ -105,9 +114,9 @@ export default function Level2Assessment() {
   if (questions.length === 0) {
     return (
       <div className="assessment-error">
-        <p>{error || 'No questions available'}</p>
+        <p>{error || t('common.noQuestions') || 'No questions available'}</p>
         <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
-          Back to Dashboard
+           {t('common.backToDashboard') || "Back to Dashboard"}
         </button>
       </div>
     );
@@ -122,15 +131,20 @@ export default function Level2Assessment() {
       <header className="assessment-header">
         <div className="header-content">
           <div className="header-title">
-            <h1>Level 2: Extended Assessment</h1>
-            <p>Deeper exploration of your wellness journey</p>
+            <h1>{t('assessment.level2') || "Level 2: Extended Assessment"}</h1>
+            <p>{t('assessment.level2Sub') || "Deeper exploration of your wellness journey"}</p>
           </div>
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={() => navigate('/dashboard')}
-          >
-            ← Dashboard
-          </button>
+          
+          {/* 4. Action Area: Language Selector + Dashboard Button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <LanguageSelector />
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => navigate('/dashboard')}
+            >
+              ← {t('common.dashboard') || "Dashboard"}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -141,7 +155,7 @@ export default function Level2Assessment() {
           <div className="progress-section">
             <div className="progress-info">
               <span className="progress-text">
-                Question {currentQuestion + 1} of {questions.length}
+                 {t('assessment.question') || "Question"} {currentQuestion + 1} {t('assessment.of') || "of"} {questions.length}
               </span>
               <span className="progress-percent">{Math.round(progress)}%</span>
             </div>
@@ -157,17 +171,15 @@ export default function Level2Assessment() {
           <div className="question-card">
             <div className="question-header">
               <span className="domain-badge">{question.domain}</span>
-              <span className="level-badge">Level 2</span>
+              <span className="level-badge">{t('assessment.level2') || "Level 2"}</span>
             </div>
 
-            {/* --- FIX: Added Question Number Logic Here --- */}
             <h2 className="question-title">
               <span style={{ color: '#f97316', marginRight: '8px' }}>
                 {currentQuestion + 1}.
               </span>
               {question.question}
             </h2>
-            {/* --------------------------------------------- */}
 
             {/* Error Message */}
             {error && <div className="error-message">{error}</div>}
@@ -197,7 +209,7 @@ export default function Level2Assessment() {
               disabled={currentQuestion === 0}
               className="btn btn-outline"
             >
-              ← Previous
+              ← {t('common.previous') || "Previous"}
             </button>
 
             {currentQuestion === questions.length - 1 ? (
@@ -206,7 +218,7 @@ export default function Level2Assessment() {
                 disabled={submitting || !answers[currentQuestion]}
                 className="btn btn-primary btn-lg"
               >
-                {submitting ? 'Submitting...' : 'Submit Assessment'}
+                {submitting ? (t('common.submitting') || 'Submitting...') : (t('assessment.completeBtn') || 'Submit Assessment')}
               </button>
             ) : (
               <button
@@ -214,14 +226,14 @@ export default function Level2Assessment() {
                 disabled={!answers[currentQuestion]}
                 className="btn btn-primary"
               >
-                Next →
+                 {t('assessment.nextBtn') || "Next"} →
               </button>
             )}
           </div>
 
           {/* Summary */}
           <div className="assessment-summary">
-            <p>📊 You're doing great! Keep exploring your wellness journey.</p>
+            <p>📊 {t('assessment.motivational') || "You're doing great! Keep exploring your wellness journey."}</p>
           </div>
         </div>
       </main>

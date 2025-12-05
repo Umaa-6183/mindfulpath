@@ -2,14 +2,21 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../config/api.js'; // <-- This path now matches your structure
+import api from '../config/api.js'; 
+
+// 1. Import Language Hook
+import { useLanguage } from './LanguageContext';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
+
+  // 2. Initialize Translation
+  // This works because AuthProvider is inside LanguageProvider in your main.jsx
+  const { t } = useLanguage();
 
   // This effect runs once to check if the user is already logged in
   useEffect(() => {
@@ -91,7 +98,10 @@ export const AuthProvider = ({ children }) => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-orange-500"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          {/* 3. Translated Loading Text */}
+          <p className="mt-4 text-gray-600">
+            {t('common.loading') || "Loading..."}
+          </p>
         </div>
       </div>
     );

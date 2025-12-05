@@ -12,7 +12,6 @@ from database import (
     PaymentLog,
     UserTracking,
 )
-# <-- FIX 1: Import schemas from your 'models.py' file, not 'schemas.py'
 from models import AssessmentResultResponse, AnswersBody
 from assessment_data import (
     ASSESSMENT_QUESTIONS,
@@ -61,11 +60,6 @@ def get_overall_stage(overall_score: int) -> dict:
 def calculate_cumulative_domain_scores(db: Session, user_id: int) -> dict:
     """
     Calculate per-domain scores across all completed levels.
-
-    Returns: {
-        "domain_name": cumulative_score,
-        ...
-    }
     """
     domain_scores = {}
 
@@ -85,12 +79,10 @@ def calculate_cumulative_domain_scores(db: Session, user_id: int) -> dict:
 def check_level_access(db: Session, user_id: int, level: int) -> bool:
     """
     Check if user has paid for and unlocked a level.
-    Level 1 is always free, levels 2-3 require payment.
     """
     if level == 1:
         return True
 
-    # Check if user has completed payment for this level
     payment = db.query(PaymentLog).filter(
         PaymentLog.user_id == user_id,
         PaymentLog.service_type == f"level_{level}",
@@ -110,15 +102,10 @@ async def get_assessment_questions(
 ):
     """
     Get the 12 assessment questions for a given level (AS-01).
-
-    Returns:
-    - All 12 questions with their domains and options
-    - User must have paid for level 2 and 3
     """
     logger.info(
         f"Assessment questions requested: Level {level} by user {current_user.id}")
 
-    # --- FIX: ALLOW ADMIN ACCESS ---
     is_admin = current_user.role == "admin" or current_user.role == "ADMIN"
     has_access = check_level_access(db, current_user.id, level)
 
@@ -127,7 +114,6 @@ async def get_assessment_questions(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail=f"Level {level} requires payment. Please complete payment first.",
         )
-    # -------------------------------
 
     if level not in ASSESSMENT_QUESTIONS:
         raise HTTPException(
@@ -153,21 +139,10 @@ async def submit_assessment_answers(
 ):
     """
     Submit assessment answers for a level (AS-02).
-
-    Accepts: {
-        "answers": {
-            "0": "A",
-            "1": "B",
-            ...
-        }
-    }
-
-    Calculates and stores scores.
     """
     logger.info(
         f"Assessment submission: Level {level} by user {current_user.id}")
 
-    # --- FIX: ALLOW ADMIN ACCESS ---
     is_admin = current_user.role == "admin" or current_user.role == "ADMIN"
     has_access = check_level_access(db, current_user.id, level)
 
@@ -176,7 +151,6 @@ async def submit_assessment_answers(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail=f"Level {level} requires payment.",
         )
-    # -------------------------------
 
     if level not in ASSESSMENT_QUESTIONS:
         raise HTTPException(
@@ -188,35 +162,28 @@ async def submit_assessment_answers(
         user_answers = body.answers
         questions = ASSESSMENT_QUESTIONS[level]
 
-        # Validate all 12 answers are provided
         if len(user_answers) != 12:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Expected 12 answers, got {len(user_answers)}",
             )
 
-        # Store each answer
         for idx, question in enumerate(questions):
             domain = question["domain"]
-            # Answers are keyed by index as a string
             answer = user_answers.get(str(idx), "").upper()
 
-            # Validate answer
             if answer not in ["A", "B", "C", "D"]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid answer for question {idx}: {answer}",
                 )
 
-            # Calculate points
             points = POINT_VALUES[answer]
 
-            # Store result
             result = AssessmentResult(
                 user_id=current_user.id,
                 level=level,
                 domain=domain,
-                # This is the score (1-4) for this specific question
                 domain_score=points,
                 answer=answer,
                 question_text=question["question"],
@@ -225,7 +192,6 @@ async def submit_assessment_answers(
 
             db.add(result)
 
-        # Log event
         tracking = UserTracking(
             user_id=current_user.id,
             event_type="assessment_completed",
@@ -262,14 +228,10 @@ async def get_assessment_report(
 ):
     """
     Get personalized assessment report (AS-03).
-
-    Calculates cumulative per-domain scores and overall life balance score.
-    Returns feedback and stage recommendations.
     """
     logger.info(f"Assessment report requested by user {current_user.id}")
 
     try:
-        # Check which levels are completed
         completed_levels = set()
         results = db.query(AssessmentResult).filter(
             AssessmentResult.user_id == current_user.id,
@@ -284,26 +246,28 @@ async def get_assessment_report(
                 detail="No assessment data found. Please complete an assessment."
             )
 
-        # Calculate cumulative domain scores
         domain_scores = calculate_cumulative_domain_scores(db, current_user.id)
-
-        # Calculate overall score
         overall_score = sum(domain_scores.values())
-
-        # Get stage
         overall_stage = get_overall_stage(overall_score)
 
-        # Generate domain feedback
         domain_feedback = {}
         for domain, score in domain_scores.items():
             interpretation = get_domain_score_interpretation(score)
+            # --- LANGUAGE UPDATE: Pass translated fields ---
             domain_feedback[domain] = {
                 "score": score,
                 "label": interpretation["label"],
+                "label_de": interpretation.get("label_de"),
+                "label_fr": interpretation.get("label_fr"),
                 "feedback": interpretation["general"],
+                "feedback_de": interpretation.get("general_de"),
+                "feedback_fr": interpretation.get("general_fr"),
                 "recommendations": interpretation["recommendations"],
+                "recommendations_de": interpretation.get("recommendations_de"),
+                "recommendations_fr": interpretation.get("recommendations_fr"),
             }
 
+        # --- LANGUAGE UPDATE: Pass translated fields for Overall Stage ---
         report = {
             "user_id": current_user.id,
             "report_generated_at": datetime.utcnow().isoformat(),
@@ -311,9 +275,20 @@ async def get_assessment_report(
             "overall_score": overall_score,
             "overall_stage": {
                 "stage": overall_stage["label"],
+                "stage_de": overall_stage.get("label_de"),
+                "stage_fr": overall_stage.get("label_fr"),
+
                 "description": overall_stage["description"],
+                "description_de": overall_stage.get("description_de"),
+                "description_fr": overall_stage.get("description_fr"),
+
                 "focus_areas": overall_stage["focus_areas"],
+                "focus_areas_de": overall_stage.get("focus_areas_de"),
+                "focus_areas_fr": overall_stage.get("focus_areas_fr"),
+
                 "recommendation": overall_stage["recommendation"],
+                "recommendation_de": overall_stage.get("recommendation_de"),
+                "recommendation_fr": overall_stage.get("recommendation_fr"),
             },
             "domain_scores": domain_scores,
             "domain_feedback": domain_feedback,
@@ -394,7 +369,6 @@ async def get_assessment_history(
 
         results = query.order_by(AssessmentResult.completed_at).all()
 
-        # <-- FIX 2: Use .model_validate() for Pydantic v2
         return [AssessmentResultResponse.model_validate(r) for r in results]
 
     except Exception as e:
