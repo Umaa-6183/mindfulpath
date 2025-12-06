@@ -106,8 +106,8 @@ export default function Register() {
     // Added 'relative' to container to position the absolute LanguageSelector correctly
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8 relative">
       
-      {/* 3. Language Selector Positioned Top-Right */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* 3. Language Selector Positioned Top-Right (Moved left to avoid overlap) */}
+      <div className="absolute top-6 right-24 z-10">
         <LanguageSelector />
       </div>
 
@@ -119,7 +119,7 @@ export default function Register() {
              {t('auth.registerBtn')} {/* Reusing 'Create Account' key */}
           </h2>
           <p className="text-gray-500 mt-2 text-sm">
-             {t('heroTitle') ? "Join MindfulPath today" : "Join MindfulPath today"} {/* Placeholder if specific key missing */}
+             {t('landing.heroTitle') ? "Join MindfulPath today" : "Join MindfulPath today"} {/* Placeholder if specific key missing */}
           </p>
         </div>
 

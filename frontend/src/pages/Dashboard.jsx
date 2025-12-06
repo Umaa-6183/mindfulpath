@@ -304,7 +304,7 @@ export default function Dashboard() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.level1Sub') || "Baseline Score"}</p>
                 </div>
                 {assessmentProgress?.level_1.completed ? (
-                  // --- CHANGE 1: Made Completed Badge Clickable ---
+                  // --- CHANGE 1: CLICKABLE COMPLETED BADGE ---
                   <button 
                     onClick={() => navigate('/report')}
                     className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
@@ -330,7 +330,7 @@ export default function Dashboard() {
                     {t('dashboard.unlock') || "Unlock"}
                   </button>
                 ) : assessmentProgress?.level_2.completed ? (
-                  // --- CHANGE 2: Made Completed Badge Clickable ---
+                  // --- CHANGE 2: CLICKABLE COMPLETED BADGE ---
                   <button 
                     onClick={() => navigate('/report')}
                     className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
@@ -356,7 +356,7 @@ export default function Dashboard() {
                     {t('dashboard.unlock') || "Unlock"}
                   </button>
                 ) : assessmentProgress?.level_3.completed ? (
-                  // --- CHANGE 3: Made Completed Badge Clickable ---
+                  // --- CHANGE 3: CLICKABLE COMPLETED BADGE ---
                   <button 
                     onClick={() => navigate('/report')}
                     className="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shrink-0 hover:bg-green-200 dark:hover:bg-green-800 transition cursor-pointer"
@@ -438,7 +438,7 @@ export default function Dashboard() {
         
       </main>
 
-      {/* --- NEW MODAL: CHOOSE ACTIVITY (Smart) --- */}
+      {/* --- MODALS --- */}
       {showActivityModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
@@ -451,7 +451,7 @@ export default function Dashboard() {
                     {t('dashboard.startPractice') || "What would you like to practice?"}
                 </h2>
                 <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
-                    Choose a session to start now.
+                    {t('common.chooseSession') || "Choose a session to start now."}
                 </p>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -483,7 +483,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* --- OLD MODAL: MANUAL LOG (Hidden unless clicked) --- */}
       {showManualLogModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 max-w-md w-full">

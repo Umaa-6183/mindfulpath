@@ -37,9 +37,10 @@ export default function Login() {
     } catch (err) {
       console.error(err);
       if (err.response && err.response.status === 401) {
-        setError('❌ Invalid email or password.'); // You can use t('auth.invalidError') here later
+        // Updated to use translation key with fallback
+        setError(t('auth.invalidError') || '❌ Invalid email or password.'); 
       } else {
-        setError('⚠️ Login failed. Please check your connection.');
+        setError(t('common.errorLoad') || '⚠️ Login failed. Please check your connection.');
       }
     } finally {
       setLoading(false);
@@ -49,8 +50,8 @@ export default function Login() {
   return (
     <div className="upgrade-container" style={{position: 'relative'}}> 
       
-      {/* 3. Add Language Selector (Absolute Positioned to not break layout) */}
-      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+      {/* 3. Language Selector Positioned at right: 80px (right-24 in Tailwind) to avoid Dark Mode Toggle overlap */}
+      <div style={{ position: 'absolute', top: '20px', right: '80px', zIndex: 10 }}>
         <LanguageSelector />
       </div>
 
@@ -82,7 +83,7 @@ export default function Login() {
             <div className="form-group" style={{marginBottom: '1rem'}}>
               {/* 5. Translated Label */}
               <label htmlFor="email" style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
-                {t('auth.emailLabel')} <span style={{color: 'red'}}>*</span>
+                {t('auth.emailLabel') || "Email"} <span style={{color: 'red'}}>*</span>
               </label>
               <input
                 id="email"
@@ -98,7 +99,7 @@ export default function Login() {
             <div className="form-group" style={{marginBottom: '1.5rem'}}>
               {/* 6. Translated Label */}
               <label htmlFor="password" style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
-                {t('auth.passwordLabel')} <span style={{color: 'red'}}>*</span>
+                {t('auth.passwordLabel') || "Password"} <span style={{color: 'red'}}>*</span>
               </label>
               
               {/* Password Input Wrapper for relative positioning */}
@@ -142,15 +143,15 @@ export default function Login() {
               style={{width: '100%', padding: '0.75rem', fontSize: '1rem'}}
             >
               {/* 7. Translated Button State */}
-              {loading ? t('common.loading') : t('auth.loginBtn')}
+              {loading ? (t('common.loading') || "Loading...") : (t('auth.loginBtn') || "Sign In")}
             </button>
           </form>
 
           <p className="payment-note" style={{marginTop: '1.5rem', textAlign: 'center'}}>
             {/* 8. Translated Footer Text */}
-            {t('auth.noAccount')}{' '}
+            {t('auth.noAccount') || "Don't have an account?"}{' '}
             <Link to="/register" style={{color: 'var(--color-orange)', fontWeight: '600', textDecoration: 'none'}}>
-              {t('auth.registerLink')}
+              {t('auth.registerLink') || "Sign Up"}
             </Link>
           </p>
         </div>

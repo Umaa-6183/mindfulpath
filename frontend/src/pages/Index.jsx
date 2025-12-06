@@ -34,8 +34,8 @@ export default function Index() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-t from-orange-500 to-blue-700 text-white relative overflow-hidden">
       
       {/* --- Language Selector Positioned Absolute Top-Right --- */}
-      {/* This ensures it floats above everything without breaking your centered layout */}
-      <div className="absolute top-6 right-6 z-50">
+      {/* UPDATED: Changed right-6 to right-24 to avoid overlap with Theme Toggle */}
+      <div className="absolute top-6 right-24 z-50">
         <LanguageSelector />
       </div>
 
@@ -59,14 +59,14 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Title - Keeping Brand Name English, but you can use t('heroTitle') if you prefer */}
+        {/* Title */}
         <h1 className="text-6xl font-extrabold mb-4 tracking-tight text-orange-200">
-          MindfulPath
+          {t('landing.heroTitle') || "MindfulPath"}
         </h1>
         
-        {/* 3. Translated Subtitle */}
+        {/* 3. Translated Subtitle (Updated Key) */}
         <p className="text-xl mb-10 font-medium tracking-wide text-amber-200">
-          {t('heroSubtitle')}
+          {t('landing.heroSubtitle')}
         </p>
 
         {/* CTA Buttons */}
@@ -75,15 +75,15 @@ export default function Index() {
             to="/register" 
             className="px-8 py-3 bg-white text-orange-600 font-semibold rounded-lg shadow-xl hover:bg-gray-100 transition duration-300 transform hover:scale-105"
           >
-            {/* 4. Translated Button Text */}
-            {t('register')}
+            {/* 4. Translated Button Text (Updated Key) */}
+            {t('landing.getStarted')}
           </Link>
           <Link 
             to="/login" 
             className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition duration-300"
           >
-            {/* 5. Translated Button Text */}
-            {t('login')}
+            {/* 5. Translated Button Text (Updated Key) */}
+            {t('landing.signIn')}
           </Link>
         </div>
         

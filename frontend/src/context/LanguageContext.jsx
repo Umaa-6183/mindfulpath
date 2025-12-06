@@ -1,3 +1,5 @@
+// /frontend/src/context/LanguageContext.jsx
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations } from '../data/translations';
 
@@ -14,10 +16,25 @@ export function LanguageProvider({ children }) {
     localStorage.setItem('mindfulLang', language);
   }, [language]);
 
-  // 3. Translation Helper Function
-  // Usage: t('heroTitle') -> Returns the string in the current language
+  // 3. Translation Helper Function (FIXED to handle dots like 'dashboard.welcomeBack')
   const t = (key) => {
-    return translations[language][key] || key; // Fallback to key if missing
+    if (!key) return ""; 
+    
+    // Split "dashboard.welcomeBack" into ["dashboard", "welcomeBack"]
+    const keys = key.split('.'); 
+    let value = translations[language];
+
+    // Drill down into the object
+    for (let k of keys) {
+      if (value && value[k]) {
+        value = value[k];
+      } else {
+        // If translation is missing, return the key so we can see what's wrong
+        return key; 
+      }
+    }
+    
+    return value;
   };
 
   return (
