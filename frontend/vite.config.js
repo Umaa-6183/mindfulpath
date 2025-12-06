@@ -10,6 +10,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000, // Increases limit to 1000kB (1MB) to reduce noise
     rollupOptions: {
       output: {
+        
+        entryFileNames: `assets/[name].${Date.now()}.js`,
+        chunkFileNames: `assets/[name].${Date.now()}.js`,
+        assetFileNames: `assets/[name].${Date.now()}.[ext]`,
+
         manualChunks(id) {
           if (id.includes('node_modules')) {
             // Separate heavy Charting libraries
