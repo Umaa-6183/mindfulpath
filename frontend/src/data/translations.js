@@ -2,6 +2,13 @@
 
 export const translations = {
   en: {
+    // --- LANDING PAGE (ADDED NOW) ---
+    landing: {
+      heroTitle: "MindfulPath",
+      heroSubtitle: "Integrate NLP, Yoga & Meditation into your daily wellness journey",
+      getStarted: "Get Started",
+      signIn: "Sign In"
+    },
     // --- COMMON & NAVIGATION ---
     common: {
       loading: "Loading...",
@@ -24,7 +31,6 @@ export const translations = {
       next: "Next",
       previous: "Previous"
     },
-
     // --- AUTH (Login/Register) ---
     auth: {
       welcomeBack: "Welcome Back",
@@ -290,6 +296,13 @@ export const translations = {
   // GERMAN (DE)
   // ---------------------------------------------------------------
   de: {
+    // --- LANDING PAGE (ADDED) ---
+    landing: {
+      heroTitle: "MindfulPath",
+      heroSubtitle: "Integrieren Sie NLP, Yoga und Meditation in Ihre tägliche Wellness-Reise.",
+      getStarted: "Loslegen",
+      signIn: "Anmelden"
+    },
     common: {
       loading: "Wird geladen...",
       errorLoad: "Fehler beim Laden.",
@@ -549,6 +562,13 @@ export const translations = {
   // FRENCH (FR)
   // ---------------------------------------------------------------
   fr: {
+    // --- LANDING PAGE (ADDED) ---
+    landing: {
+      heroTitle: "MindfulPath",
+      heroSubtitle: "Intégrez la PNL, le Yoga et la Méditation dans votre quotidien.",
+      getStarted: "Commencer",
+      signIn: "Connexion"
+    },
     common: {
       loading: "Chargement...",
       errorLoad: "Échec du chargement.",

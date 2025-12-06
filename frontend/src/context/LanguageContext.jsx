@@ -6,9 +6,14 @@ import { translations } from '../data/translations';
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  // 1. Load saved language or default to 'en'
+  // 1. Load saved language, BUT ensure it actually exists in our dictionary
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('mindfulLang') || 'en';
+    const saved = localStorage.getItem('mindfulLang');
+    // Safety Check: If saved lang is "en-US" but we only have "en", fallback to "en"
+    if (saved && translations[saved]) {
+      return saved;
+    }
+    return 'en';
   });
 
   // 2. Save language to LocalStorage whenever it changes
@@ -16,20 +21,24 @@ export function LanguageProvider({ children }) {
     localStorage.setItem('mindfulLang', language);
   }, [language]);
 
-  // 3. Translation Helper Function (FIXED to handle dots like 'dashboard.welcomeBack')
+  // 3. Translation Helper Function
   const t = (key) => {
     if (!key) return ""; 
     
-    // Split "dashboard.welcomeBack" into ["dashboard", "welcomeBack"]
-    const keys = key.split('.'); 
-    let value = translations[language];
+    // Safety Check: Ensure we have a valid language object. 
+    // If 'fr' is selected but missing, fallback to 'en' immediately to prevent crashes.
+    const currentDict = translations[language] || translations['en'];
 
-    // Drill down into the object
+    const keys = key.split('.'); 
+    let value = currentDict;
+
+    // Drill down into the object (e.g. landing -> heroTitle)
     for (let k of keys) {
-      if (value && value[k]) {
+      // Check if value exists and has the key
+      if (value && value[k] !== undefined) {
         value = value[k];
       } else {
-        // If translation is missing, return the key so we can see what's wrong
+        // If missing, return key so we know it's broken
         return key; 
       }
     }
